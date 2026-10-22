@@ -1,73 +1,45 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
 <meta name="theme-color" content="#000000" />
-<meta name="description" content="ZeroDay Meet Chat — Global invite-code P2P chat. No IP, no port, no API key. Works across 195 countries on any device." />
-<title>ZeroDay Meet Chat — Global P2P</title>
+<meta name="description" content="ZeroDay Meet Chat — Global P2P chat with voice/video calls, group rooms up to many peers, and stranger matching. No IP, no port, no API key." />
+<title>ZeroDay Meet Chat — Calls · Groups · Strangers</title>
 <style>
 /* ==========================================================================
-   ZeroDay Meet Chat  ·  Global P2P · Invite-Code Based · No IP / Port / API Key
-   Engine: pure WebRTC + PublicSignaling + IndexedDB cache + Broadcast fallback
-   License: original work
+   ZeroDay Meet Chat v2.0
+   · 1-on-1 P2P chat (invite code)
+   · Group chat (mesh WebRTC, 1 to many peers)
+   · Stranger matching (auto/manual, Omegle-style)
+   · Voice/Video calls (WebRTC media)
+   · Clear conversation & history
+   No IP, no port, no API key. End-to-end encrypted by WebRTC DTLS.
    ========================================================================== */
 
-/* ---------- CSS RESET ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  -webkit-text-size-adjust: 100%;
-  -webkit-tap-highlight-color: transparent;
-  text-rendering: optimizeLegibility;
-}
-img, svg { display: block; max-width: 100%; }
-button, input, textarea { font: inherit; color: inherit; background: none; border: none; outline: none; }
-button { cursor: pointer; -webkit-user-select: none; user-select: none; }
-ul { list-style: none; }
+html, body { height:100%; width:100%; overflow:hidden; -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent; text-rendering:optimizeLegibility; }
+img, svg { display:block; max-width:100%; }
+button, input, textarea { font:inherit; color:inherit; background:none; border:none; outline:none; }
+button { cursor:pointer; -webkit-user-select:none; user-select:none; }
+ul { list-style:none; }
 
-/* ---------- THEME TOKENS ---------- */
 :root {
-  --bg:           rgba(0,0,0,1);
-  --bg-soft:      rgba(10,12,20,1);
-  --bg-elev:      rgba(20,24,38,0.85);
-  --bg-glass:     rgba(0,0,0,0.55);
-  --border:       rgba(255,255,255,0.08);
-  --border-2:     rgba(255,255,255,0.14);
-  --text:         rgba(245,247,255,0.96);
-  --text-dim:     rgba(245,247,255,0.6);
-  --text-faint:   rgba(245,247,255,0.35);
-  --accent:       #7c5cff;
-  --accent-2:     #00e5ff;
-  --accent-glow:  rgba(124,92,255,0.45);
-  --danger:       #ff3b5c;
-  --ok:           #2bd576;
-  --warn:         #ffb347;
-  --radius:       18px;
-  --radius-sm:    10px;
-  --shadow:       0 18px 60px -18px rgba(0,0,0,0.7);
+  --bg: rgba(0,0,0,1); --bg-soft: rgba(10,12,20,1); --bg-elev: rgba(20,24,38,0.85);
+  --bg-glass: rgba(0,0,0,0.55); --border: rgba(255,255,255,0.08); --border-2: rgba(255,255,255,0.14);
+  --text: rgba(245,247,255,0.96); --text-dim: rgba(245,247,255,0.6); --text-faint: rgba(245,247,255,0.35);
+  --accent: #7c5cff; --accent-2: #00e5ff; --accent-glow: rgba(124,92,255,0.45);
+  --danger: #ff3b5c; --ok: #2bd576; --warn: #ffb347;
+  --radius: 18px; --radius-sm: 10px; --shadow: 0 18px 60px -18px rgba(0,0,0,0.7);
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, system-ui, 'Noto Sans SC', sans-serif;
   --mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
-  --safe-top:    env(safe-area-inset-top, 0px);
-  --safe-bot:    env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px); --safe-bot: env(safe-area-inset-bottom, 0px);
   --scale: 1;
 }
-
-/* ---------- THEME: MIDNIGHT (default) ---------- */
 [data-theme="midnight"] { --accent:#7c5cff; --accent-2:#00e5ff; }
-
-/* ---------- THEME: CRIMSON ---------- */
 [data-theme="crimson"]  { --accent:#ff3b5c; --accent-2:#ff9f1c; --accent-glow:rgba(255,59,92,0.45); }
-
-/* ---------- THEME: MATRIX ---------- */
 [data-theme="matrix"]   { --accent:#00ff8c; --accent-2:#00e5ff; --accent-glow:rgba(0,255,140,0.4); --font:'JetBrains Mono', monospace; }
-
-/* ---------- THEME: SUNSET ---------- */
 [data-theme="sunset"]   { --accent:#ff7a59; --accent-2:#ffd166; --accent-glow:rgba(255,122,89,0.45); }
-
-/* ---------- THEME: ARCTIC ---------- */
 [data-theme="arctic"]   {
   --bg:rgba(240,245,255,1); --bg-soft:rgba(225,232,250,1); --bg-elev:rgba(255,255,255,0.85);
   --bg-glass:rgba(255,255,255,0.65); --border:rgba(0,0,0,0.1); --border-2:rgba(0,0,0,0.18);
@@ -75,526 +47,321 @@ ul { list-style: none; }
   --accent:#3b5bff; --accent-2:#00b8d9; --accent-glow:rgba(59,91,255,0.3);
 }
 
-/* ---------- BASE ---------- */
-body {
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--text);
-  font-size: calc(15px * var(--scale));
-  line-height: 1.5;
-  overflow: hidden;
-  letter-spacing: -0.01em;
-}
-body::before {
-  content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
-  background:
-    radial-gradient(1200px 700px at 110% -10%, var(--accent-glow), transparent 60%),
-    radial-gradient(900px 600px at -10% 110%, rgba(0,229,255,0.18), transparent 60%);
+body { font-family:var(--font); background:var(--bg); color:var(--text); font-size:calc(15px * var(--scale)); line-height:1.5; overflow:hidden; letter-spacing:-0.01em; }
+body::before { content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background: radial-gradient(1200px 700px at 110% -10%, var(--accent-glow), transparent 60%),
+              radial-gradient(900px 600px at -10% 110%, rgba(0,229,255,0.18), transparent 60%);
   opacity:0.85;
 }
-button, input, textarea { font-family: var(--font); }
-.mono { font-family: var(--mono); }
+.mono { font-family:var(--mono); }
 
-/* ---------- APP LAYOUT ---------- */
-#app {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  background: var(--bg);
-  z-index: 1;
-}
+#app { position:fixed; inset:0; display:grid; grid-template-rows:auto 1fr; background:var(--bg); z-index:1; }
 
-/* ---------- TOP BAR ---------- */
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: calc(var(--safe-top) + 10px) 14px 10px;
-  background: var(--bg-glass);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  border-bottom: 1px solid var(--border);
-  z-index: 50;
-}
-.brand {
-  display:flex; align-items:center; gap:9px; font-weight:700; font-size:1.05rem;
-  letter-spacing:-0.02em;
-}
-.brand .logo {
-  width:30px; height:30px; border-radius:9px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  display:grid; place-items:center; color:#000; font-weight:900; font-size:.85rem;
-  box-shadow: 0 4px 18px var(--accent-glow);
-}
-.brand .name { white-space:nowrap; }
+.topbar { display:flex; align-items:center; gap:10px; padding:calc(var(--safe-top) + 10px) 14px 10px;
+  background:var(--bg-glass); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+  border-bottom:1px solid var(--border); z-index:50; }
+.brand { display:flex; align-items:center; gap:9px; font-weight:700; font-size:1.05rem; letter-spacing:-0.02em; }
+.brand .logo { width:30px; height:30px; border-radius:9px; background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  display:grid; place-items:center; color:#000; font-weight:900; font-size:.85rem; box-shadow:0 4px 18px var(--accent-glow); }
 .brand .name small { display:block; font-size:.62rem; color:var(--text-dim); font-weight:500; letter-spacing:0.05em; text-transform:uppercase; }
 .topbar .spacer { flex:1; }
-.icon-btn {
-  width:38px; height:38px; border-radius:11px;
-  display:grid; place-items:center;
-  background:var(--bg-elev); border:1px solid var(--border);
-  color:var(--text); transition:all .18s ease;
-}
+.icon-btn { width:38px; height:38px; border-radius:11px; display:grid; place-items:center; background:var(--bg-elev); border:1px solid var(--border); color:var(--text); transition:all .18s ease; }
 .icon-btn:hover { border-color:var(--border-2); background:var(--bg-soft); transform:translateY(-1px); }
 .icon-btn:active { transform:scale(0.96); }
 .icon-btn svg { width:18px; height:18px; }
+.icon-btn.danger { color:var(--danger); }
 
-/* ---------- CONNECTION PILL ---------- */
-.conn-pill {
-  display:inline-flex; align-items:center; gap:7px;
-  padding:6px 12px; border-radius:999px;
-  background:var(--bg-elev); border:1px solid var(--border);
-  font-size:.74rem; font-weight:600; letter-spacing:.02em;
-  color:var(--text-dim);
-}
+.conn-pill { display:inline-flex; align-items:center; gap:7px; padding:6px 12px; border-radius:999px;
+  background:var(--bg-elev); border:1px solid var(--border); font-size:.74rem; font-weight:600; letter-spacing:.02em; color:var(--text-dim); }
 .conn-pill .dot { width:7px; height:7px; border-radius:50%; background:var(--warn); animation:pulse 1.6s infinite; }
 .conn-pill.online .dot { background:var(--ok); animation:none; }
 .conn-pill.online { color:var(--text); border-color:rgba(43,213,118,0.4); }
+.conn-pill.searching .dot { background:var(--accent); animation:pulse 0.8s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
 
-/* ---------- VIEW PORTS ---------- */
-.view {
-  position: absolute; inset:0; top:0; padding-top:0;
-  display:flex; flex-direction:column;
-  opacity:0; visibility:hidden; transform:translateY(8px);
-  transition:opacity .25s ease, transform .25s ease, visibility .25s;
-  pointer-events:none;
-}
+.view { position:absolute; inset:0; display:flex; flex-direction:column; opacity:0; visibility:hidden; transform:translateY(8px);
+  transition:opacity .25s ease, transform .25s ease, visibility .25s; pointer-events:none; }
 .view.active { opacity:1; visibility:visible; transform:none; pointer-events:auto; }
+main { position:relative; overflow:hidden; background:transparent; }
 
-/* main area holds views */
-main {
-  position:relative; overflow:hidden;
-  background:transparent;
-}
+/* HOME */
+.home-wrap { flex:1; overflow-y:auto; padding:24px 16px calc(var(--safe-bot) + 24px); display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:22px; }
+.hero { text-align:center; max-width:680px; width:100%; padding-top:10px; }
+.hero h1 { font-size:clamp(1.8rem, 6vw, 3rem); font-weight:800; letter-spacing:-0.03em; line-height:1.05; margin-bottom:10px;
+  background:linear-gradient(135deg, var(--text) 30%, var(--accent) 70%, var(--accent-2));
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.hero p { color:var(--text-dim); font-size:1rem; max-width:560px; margin:0 auto; }
+.hero .badges { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:14px; }
+.hero .badges span { font-size:.7rem; padding:5px 10px; border-radius:999px; background:var(--bg-elev); border:1px solid var(--border); color:var(--text-dim); font-weight:600; }
 
-/* ---------- HOME / WELCOME ---------- */
-.home-wrap {
-  flex:1; overflow-y:auto; padding:24px 16px calc(var(--safe-bot) + 24px);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:22px;
-}
-.hero {
-  text-align:center; max-width:680px; width:100%;
-}
-.hero h1 {
-  font-size: clamp(1.8rem, 6vw, 3rem);
-  font-weight:800; letter-spacing:-0.03em; line-height:1.05;
-  margin-bottom:10px;
-  background: linear-gradient(135deg, var(--text) 30%, var(--accent) 70%, var(--accent-2));
-  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-}
-.hero p { color:var(--text-dim); font-size:1rem; max-width:520px; margin:0 auto; }
-.hero .badges {
-  display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:14px;
-}
-.hero .badges span {
-  font-size:.7rem; padding:5px 10px; border-radius:999px;
-  background:var(--bg-elev); border:1px solid var(--border); color:var(--text-dim);
-  font-weight:600;
-}
-
-.action-grid {
-  display:grid; gap:14px;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  width:100%; max-width:920px;
-}
-.card {
-  background:var(--bg-elev); border:1px solid var(--border); border-radius:var(--radius);
-  padding:22px; position:relative; overflow:hidden;
-  transition:all .25s ease;
-  backdrop-filter: blur(10px);
-}
-.card::before {
-  content:''; position:absolute; inset:0; pointer-events:none;
-  background:radial-gradient(120% 80% at 0% 0%, var(--accent-glow), transparent 50%);
-  opacity:0; transition:opacity .3s;
-}
+.action-grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); width:100%; max-width:980px; }
+.card { background:var(--bg-elev); border:1px solid var(--border); border-radius:var(--radius); padding:22px; position:relative; overflow:hidden;
+  transition:all .25s ease; backdrop-filter:blur(10px); }
+.card::before { content:''; position:absolute; inset:0; pointer-events:none; background:radial-gradient(120% 80% at 0% 0%, var(--accent-glow), transparent 50%); opacity:0; transition:opacity .3s; }
 .card:hover { border-color:var(--border-2); transform:translateY(-2px); box-shadow:var(--shadow); }
 .card:hover::before { opacity:.5; }
-.card .ic {
-  width:44px; height:44px; border-radius:12px; margin-bottom:14px;
-  display:grid; place-items:center;
-  background:linear-gradient(135deg, var(--accent), var(--accent-2));
-  color:#000;
-}
+.card .ic { width:44px; height:44px; border-radius:12px; margin-bottom:14px; display:grid; place-items:center;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#000; }
 .card .ic svg { width:22px; height:22px; }
 .card h3 { font-size:1.05rem; margin-bottom:6px; font-weight:700; }
 .card p { color:var(--text-dim); font-size:.86rem; line-height:1.45; margin-bottom:14px; }
 .card .btn { width:100%; }
+.card .tag { position:absolute; top:14px; right:14px; font-size:.62rem; padding:3px 8px; border-radius:999px; background:var(--bg); color:var(--accent); border:1px solid var(--accent); font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
 
-.btn {
-  display:inline-flex; align-items:center; justify-content:center; gap:8px;
-  padding:12px 18px; border-radius:12px;
-  background:linear-gradient(135deg, var(--accent), var(--accent-2));
-  color:#000; font-weight:700; font-size:.92rem; letter-spacing:-.01em;
-  border:none; transition:all .18s ease;
-  box-shadow: 0 8px 24px -10px var(--accent-glow);
-}
-.btn:hover { transform:translateY(-1px); box-shadow: 0 12px 30px -10px var(--accent-glow); }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 18px; border-radius:12px;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#000; font-weight:700; font-size:.92rem; letter-spacing:-.01em;
+  border:none; transition:all .18s ease; box-shadow:0 8px 24px -10px var(--accent-glow); }
+.btn:hover { transform:translateY(-1px); box-shadow:0 12px 30px -10px var(--accent-glow); }
 .btn:active { transform:translateY(0); }
-.btn.ghost {
-  background:transparent; color:var(--text); border:1px solid var(--border-2); box-shadow:none;
-}
+.btn.ghost { background:transparent; color:var(--text); border:1px solid var(--border-2); box-shadow:none; }
 .btn.ghost:hover { background:var(--bg-elev); }
 .btn.danger { background:linear-gradient(135deg, var(--danger), #ff7a8a); color:#fff; }
+.btn.warn { background:linear-gradient(135deg, var(--warn), #ffd166); color:#000; }
 .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
 
-/* ---------- MODAL ---------- */
-.modal-overlay {
-  position:fixed; inset:0; z-index:1000;
-  background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
-  display:grid; place-items:center; padding:18px;
-  opacity:0; visibility:hidden; transition:opacity .2s, visibility .2s;
-}
+/* MODAL */
+.modal-overlay { position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
+  display:grid; place-items:center; padding:18px; opacity:0; visibility:hidden; transition:opacity .2s, visibility .2s; }
 .modal-overlay.active { opacity:1; visibility:visible; }
-.modal {
-  background:var(--bg-soft); border:1px solid var(--border-2); border-radius:var(--radius);
-  width:100%; max-width:480px; max-height:90vh; overflow-y:auto;
-  padding:24px; box-shadow:var(--shadow);
-  transform:scale(0.96); transition:transform .22s ease;
-}
+.modal { background:var(--bg-soft); border:1px solid var(--border-2); border-radius:var(--radius); width:100%; max-width:480px;
+  max-height:90vh; overflow-y:auto; padding:24px; box-shadow:var(--shadow); transform:scale(0.96); transition:transform .22s ease; }
 .modal-overlay.active .modal { transform:scale(1); }
 .modal h2 { font-size:1.25rem; margin-bottom:6px; font-weight:800; letter-spacing:-.02em; }
 .modal p.sub { color:var(--text-dim); font-size:.86rem; margin-bottom:18px; }
 
 .field { margin-bottom:14px; }
 .field label { display:block; font-size:.78rem; font-weight:600; color:var(--text-dim); margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em; }
-.field input, .field textarea, .field select {
-  width:100%; padding:11px 13px; border-radius:11px;
-  background:var(--bg); border:1px solid var(--border-2); color:var(--text);
-  font-size:.92rem; transition:border-color .15s;
-}
+.field input, .field textarea, .field select { width:100%; padding:11px 13px; border-radius:11px; background:var(--bg); border:1px solid var(--border-2); color:var(--text); font-size:.92rem; transition:border-color .15s; }
 .field input:focus, .field textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
 .field input.code { font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase; text-align:center; font-size:1.05rem; font-weight:700; }
-
 .modal .actions { display:flex; gap:10px; margin-top:6px; }
 .modal .actions .btn { flex:1; }
 
-.invite-display {
-  background:var(--bg); border:1px dashed var(--border-2); border-radius:12px;
-  padding:16px; text-align:center; margin:14px 0;
-}
-.invite-display .code {
-  font-family:var(--mono); font-size:1.4rem; font-weight:700; letter-spacing:.18em;
-  color:var(--accent); text-transform:uppercase; word-break:break-all;
-}
-.invite-display .link {
-  font-family:var(--mono); font-size:.72rem; color:var(--text-dim);
-  word-break:break-all; margin-top:8px;
-}
+.invite-display { background:var(--bg); border:1px dashed var(--border-2); border-radius:12px; padding:16px; text-align:center; margin:14px 0; }
+.invite-display .code { font-family:var(--mono); font-size:1.4rem; font-weight:700; letter-spacing:.18em; color:var(--accent); text-transform:uppercase; word-break:break-all; }
+.invite-display .link { font-family:var(--mono); font-size:.72rem; color:var(--text-dim); word-break:break-all; margin-top:8px; }
 .invite-display .sub { font-size:.74rem; color:var(--text-faint); margin-top:6px; }
 
-/* ---------- CHAT VIEW ---------- */
-.chat-wrap {
-  display:flex; flex-direction:column; height:100%; overflow:hidden;
-}
-.chat-header {
-  display:flex; align-items:center; gap:12px;
-  padding:12px 14px; background:var(--bg-glass); backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--border);
-}
-.chat-header .av {
-  width:42px; height:42px; border-radius:50%;
-  background:linear-gradient(135deg, var(--accent), var(--accent-2));
-  display:grid; place-items:center; font-weight:800; color:#000; font-size:1rem;
-  position:relative; flex-shrink:0;
-}
-.chat-header .av::after {
-  content:''; position:absolute; bottom:0; right:0;
-  width:11px; height:11px; border-radius:50%; background:var(--warn); border:2px solid var(--bg-soft);
-}
+/* CHAT */
+.chat-wrap { display:flex; flex-direction:column; height:100%; overflow:hidden; }
+.chat-header { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--bg-glass); backdrop-filter:blur(14px); border-bottom:1px solid var(--border); }
+.chat-header .av { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent-2)); display:grid; place-items:center; font-weight:800; color:#000; font-size:.95rem; position:relative; flex-shrink:0; }
+.chat-header .av::after { content:''; position:absolute; bottom:0; right:0; width:10px; height:10px; border-radius:50%; background:var(--warn); border:2px solid var(--bg-soft); }
 .chat-header .av.online::after { background:var(--ok); }
+.chat-header .av.searching::after { background:var(--accent); animation:pulse 0.8s infinite; }
 .chat-header .meta { flex:1; min-width:0; }
-.chat-header .meta .name { font-weight:700; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.chat-header .meta .status { font-size:.74rem; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.chat-header .meta .name { font-weight:700; font-size:.98rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.chat-header .meta .status { font-size:.72rem; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.chat-header .header-actions { display:flex; gap:6px; }
 
-.messages {
-  flex:1; overflow-y:auto; padding:16px 14px 8px;
-  display:flex; flex-direction:column; gap:10px;
-  scroll-behavior:smooth;
-  overscroll-behavior:contain;
-}
-.msg {
-  max-width:78%; padding:10px 13px; border-radius:16px;
-  font-size:.92rem; line-height:1.4; word-wrap:break-word; word-break:break-word;
-  position:relative; animation:msgIn .25s ease;
-}
+.messages { flex:1; overflow-y:auto; padding:14px 12px 6px; display:flex; flex-direction:column; gap:8px; scroll-behavior:smooth; overscroll-behavior:contain; }
+.msg { max-width:78%; padding:9px 12px; border-radius:15px; font-size:.92rem; line-height:1.4; word-wrap:break-word; word-break:break-word; position:relative; animation:msgIn .25s ease; }
 @keyframes msgIn { from{opacity:0; transform:translateY(6px) scale(0.98)} to{opacity:1; transform:none} }
 .msg .body { white-space:pre-wrap; }
-.msg .meta { font-size:.66rem; color:var(--text-faint); margin-top:4px; display:flex; gap:5px; align-items:center; }
+.msg .meta { font-size:.66rem; color:var(--text-faint); margin-top:3px; display:flex; gap:5px; align-items:center; }
+.msg .meta .author { color:var(--accent-2); font-weight:600; }
 .msg .meta .tick { font-size:.78rem; }
-.msg.them {
-  align-self:flex-start;
-  background:var(--bg-elev); border:1px solid var(--border);
-  border-bottom-left-radius:5px;
-}
-.msg.me {
-  align-self:flex-end;
-  background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#000;
-  border-bottom-right-radius:5px;
-}
+.msg.them { align-self:flex-start; background:var(--bg-elev); border:1px solid var(--border); border-bottom-left-radius:5px; }
+.msg.me { align-self:flex-end; background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#000; border-bottom-right-radius:5px; }
 .msg.me .meta { color:rgba(0,0,0,0.55); }
-.msg.sys {
-  align-self:center; background:transparent; color:var(--text-faint);
-  font-size:.74rem; padding:4px 10px; text-align:center;
-  border:1px dashed var(--border); border-radius:999px; max-width:90%;
-}
-.msg.file {
-  display:flex; gap:10px; align-items:center; padding:12px 14px;
-}
-.msg.file .fic { width:34px; height:34px; border-radius:9px; background:rgba(255,255,255,0.1); display:grid; place-items:center; flex-shrink:0; }
+.msg.me .meta .author { color:rgba(0,0,0,0.7); }
+.msg.sys { align-self:center; background:transparent; color:var(--text-faint); font-size:.74rem; padding:4px 10px; text-align:center; border:1px dashed var(--border); border-radius:999px; max-width:92%; }
+.msg.file { display:flex; gap:10px; align-items:center; padding:11px 13px; }
+.msg.file .fic { width:32px; height:32px; border-radius:9px; background:rgba(255,255,255,0.1); display:grid; place-items:center; flex-shrink:0; }
 .msg.file .fic svg { width:18px; height:18px; }
 .msg.file .finf { flex:1; min-width:0; }
 .msg.file .fname { font-weight:600; font-size:.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .msg.file .fsize { font-size:.72rem; opacity:.7; }
 .msg.file .dl { font-size:.72rem; font-weight:700; text-decoration:underline; }
 
-.typing-bubble {
-  align-self:flex-start; padding:10px 14px; border-radius:16px; border-bottom-left-radius:5px;
-  background:var(--bg-elev); border:1px solid var(--border);
-  display:inline-flex; gap:4px; align-items:center;
-  font-size:.78rem; color:var(--text-dim);
-}
-.typing-bubble .d {
-  width:6px; height:6px; border-radius:50%; background:var(--text-dim);
-  animation:tdot 1.2s infinite;
-}
+.typing-bubble { align-self:flex-start; padding:9px 13px; border-radius:15px; border-bottom-left-radius:5px; background:var(--bg-elev); border:1px solid var(--border); display:inline-flex; gap:4px; align-items:center; }
+.typing-bubble .d { width:6px; height:6px; border-radius:50%; background:var(--text-dim); animation:tdot 1.2s infinite; }
 .typing-bubble .d:nth-child(2){animation-delay:.15s}
 .typing-bubble .d:nth-child(3){animation-delay:.3s}
 @keyframes tdot { 0%,60%,100%{opacity:.3; transform:translateY(0)} 30%{opacity:1; transform:translateY(-3px)} }
 
-/* ---------- COMPOSER ---------- */
-.composer {
-  display:flex; align-items:flex-end; gap:8px;
-  padding:10px 12px calc(var(--safe-bot) + 10px);
-  background:var(--bg-glass); backdrop-filter:blur(14px);
-  border-top:1px solid var(--border);
-}
-.composer .attach-btn, .composer .send-btn {
-  width:42px; height:42px; border-radius:12px; flex-shrink:0;
-  display:grid; place-items:center;
-  background:var(--bg-elev); border:1px solid var(--border); color:var(--text);
-  transition:all .15s;
-}
+.composer { display:flex; align-items:flex-end; gap:8px; padding:10px 12px calc(var(--safe-bot) + 10px); background:var(--bg-glass); backdrop-filter:blur(14px); border-top:1px solid var(--border); }
+.composer .attach-btn, .composer .send-btn { width:42px; height:42px; border-radius:12px; flex-shrink:0; display:grid; place-items:center; background:var(--bg-elev); border:1px solid var(--border); color:var(--text); transition:all .15s; }
 .composer .attach-btn:hover { border-color:var(--border-2); }
-.composer .send-btn {
-  background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#000; border:none;
-}
+.composer .send-btn { background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#000; border:none; }
 .composer .send-btn:disabled { opacity:.4; }
 .composer .send-btn svg, .composer .attach-btn svg { width:20px; height:20px; }
-.composer textarea {
-  flex:1; resize:none; min-height:42px; max-height:140px;
-  padding:11px 14px; border-radius:14px;
-  background:var(--bg); border:1px solid var(--border-2); color:var(--text);
-  font-size:.95rem; line-height:1.4;
-  transition:border-color .15s;
-}
+.composer textarea { flex:1; resize:none; min-height:42px; max-height:140px; padding:11px 14px; border-radius:14px; background:var(--bg); border:1px solid var(--border-2); color:var(--text); font-size:.95rem; line-height:1.4; transition:border-color .15s; }
 .composer textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
 
-/* ---------- SETTINGS DRAWER ---------- */
-.drawer {
-  position:fixed; top:0; right:0; bottom:0; width:90%; max-width:380px;
-  background:var(--bg-soft); border-left:1px solid var(--border-2);
-  transform:translateX(100%); transition:transform .28s cubic-bezier(.4,0,.2,1);
-  z-index:900; box-shadow:-20px 0 60px -10px rgba(0,0,0,0.6);
-  display:flex; flex-direction:column;
-  padding-top:var(--safe-top); padding-bottom:var(--safe-bot);
-}
+/* STRANGER OVERLAY */
+.stranger-searching { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:rgba(0,0,0,0.4); backdrop-filter:blur(6px); z-index:30; padding:20px; text-align:center; }
+.stranger-searching .ring { width:80px; height:80px; border-radius:50%; border:3px solid var(--border-2); border-top-color:var(--accent); animation:spin 1s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg) } }
+.stranger-searching h3 { font-size:1.15rem; font-weight:700; }
+.stranger-searching p { color:var(--text-dim); font-size:.88rem; max-width:320px; }
+
+/* CALL OVERLAY */
+.call-overlay { position:fixed; inset:0; z-index:1200; background:#000; display:none; flex-direction:column; }
+.call-overlay.active { display:flex; }
+.call-overlay .remote-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#000; }
+.call-overlay .local-video { position:absolute; top:calc(var(--safe-top) + 14px); right:14px; width:120px; height:160px; object-fit:cover; border-radius:14px; border:2px solid var(--border-2); background:#111; z-index:2; }
+.call-overlay .call-info { position:absolute; top:calc(var(--safe-top) + 14px); left:14px; z-index:2; }
+.call-overlay .call-info .cname { font-weight:700; font-size:1.1rem; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,0.6); }
+.call-overlay .call-info .cstate { color:rgba(255,255,255,0.7); font-size:.82rem; text-shadow:0 2px 8px rgba(0,0,0,0.6); }
+.call-overlay .call-controls { position:absolute; bottom:calc(var(--safe-bot) + 24px); left:50%; transform:translateX(-50%); display:flex; gap:14px; z-index:3; padding:14px 20px; background:rgba(0,0,0,0.5); backdrop-filter:blur(12px); border-radius:999px; border:1px solid var(--border-2); }
+.call-overlay .call-controls button { width:54px; height:54px; border-radius:50%; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:#fff; display:grid; place-items:center; transition:all .15s; }
+.call-overlay .call-controls button:hover { background:rgba(255,255,255,0.2); }
+.call-overlay .call-controls button.hangup { background:var(--danger); border-color:var(--danger); }
+.call-overlay .call-controls button.muted { background:var(--accent); border-color:var(--accent); color:#000; }
+.call-overlay .call-controls button svg { width:22px; height:22px; }
+
+/* PARTICIPANTS PANEL (group) */
+.participants-panel { position:absolute; top:0; right:0; bottom:0; width:80%; max-width:300px; background:var(--bg-soft); border-left:1px solid var(--border-2); transform:translateX(100%); transition:transform .25s ease; z-index:40; padding-top:var(--safe-top); }
+.participants-panel.active { transform:translateX(0); }
+.participants-panel .head { padding:16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.participants-panel .head h3 { font-size:1rem; font-weight:700; }
+.participants-panel .body { padding:10px; overflow-y:auto; }
+.participant-item { display:flex; align-items:center; gap:10px; padding:10px; border-radius:11px; }
+.participant-item:hover { background:var(--bg-elev); }
+.participant-item .av { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent-2)); display:grid; place-items:center; font-weight:800; color:#000; font-size:.82rem; position:relative; flex-shrink:0; }
+.participant-item .av::after { content:''; position:absolute; bottom:-1px; right:-1px; width:9px; height:9px; border-radius:50%; background:var(--warn); border:2px solid var(--bg-soft); }
+.participant-item .av.online::after { background:var(--ok); }
+.participant-item .inf { flex:1; min-width:0; }
+.participant-item .nm { font-weight:600; font-size:.86rem; }
+.participant-item .nm .you { color:var(--accent); font-size:.7rem; margin-left:5px; }
+.participant-item .st { font-size:.7rem; color:var(--text-dim); }
+
+/* DRAWER */
+.drawer { position:fixed; top:0; right:0; bottom:0; width:90%; max-width:380px; background:var(--bg-soft); border-left:1px solid var(--border-2);
+  transform:translateX(100%); transition:transform .28s cubic-bezier(.4,0,.2,1); z-index:900; box-shadow:-20px 0 60px -10px rgba(0,0,0,0.6);
+  display:flex; flex-direction:column; padding-top:var(--safe-top); padding-bottom:var(--safe-bot); }
 .drawer.active { transform:translateX(0); }
-.drawer-head {
-  display:flex; align-items:center; gap:10px; padding:16px;
-  border-bottom:1px solid var(--border);
-}
+.drawer-head { display:flex; align-items:center; gap:10px; padding:16px; border-bottom:1px solid var(--border); }
 .drawer-head h2 { font-size:1.1rem; font-weight:800; flex:1; }
 .drawer-body { flex:1; overflow-y:auto; padding:16px; }
 .drawer-body .section { margin-bottom:22px; }
-.drawer-body .section h3 {
-  font-size:.74rem; text-transform:uppercase; letter-spacing:.08em;
-  color:var(--text-dim); font-weight:700; margin-bottom:10px;
-}
+.drawer-body .section h3 { font-size:.74rem; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); font-weight:700; margin-bottom:10px; }
 .theme-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
-.theme-swatch {
-  aspect-ratio:1; border-radius:11px; cursor:pointer;
-  border:2px solid transparent; transition:all .15s;
-  position:relative;
-}
+.theme-swatch { aspect-ratio:1; border-radius:11px; cursor:pointer; border:2px solid transparent; transition:all .15s; position:relative; }
 .theme-swatch.active { border-color:var(--accent); transform:scale(1.05); }
 .theme-swatch[data-theme="midnight"]{background:linear-gradient(135deg,#0a0c14,#7c5cff)}
 .theme-swatch[data-theme="crimson"]{background:linear-gradient(135deg,#1a0a10,#ff3b5c)}
 .theme-swatch[data-theme="matrix"]{background:linear-gradient(135deg,#02110a,#00ff8c)}
 .theme-swatch[data-theme="sunset"]{background:linear-gradient(135deg,#1a0f08,#ff7a59)}
 .theme-swatch[data-theme="arctic"]{background:linear-gradient(135deg,#e8eef8,#3b5bff)}
-
 .scale-row { display:flex; gap:8px; }
-.scale-row button {
-  flex:1; padding:9px; border-radius:10px; background:var(--bg-elev);
-  border:1px solid var(--border); color:var(--text); font-size:.82rem; font-weight:600;
-  transition:all .15s;
-}
+.scale-row button { flex:1; padding:9px; border-radius:10px; background:var(--bg-elev); border:1px solid var(--border); color:var(--text); font-size:.82rem; font-weight:600; transition:all .15s; }
 .scale-row button.active { background:var(--accent); color:#000; border-color:var(--accent); }
-
-.toggle-row {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:11px 0; border-bottom:1px solid var(--border);
-}
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--border); }
 .toggle-row:last-child { border-bottom:none; }
 .toggle-row .lab { font-size:.88rem; }
 .toggle-row .lab small { display:block; color:var(--text-dim); font-size:.72rem; margin-top:1px; }
-.toggle {
-  width:42px; height:24px; border-radius:999px; background:var(--bg-elev);
-  border:1px solid var(--border-2); position:relative; cursor:pointer; transition:all .2s;
-}
-.toggle::after {
-  content:''; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%;
-  background:var(--text); transition:all .2s;
-}
+.toggle { width:42px; height:24px; border-radius:999px; background:var(--bg-elev); border:1px solid var(--border-2); position:relative; cursor:pointer; transition:all .2s; }
+.toggle::after { content:''; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:var(--text); transition:all .2s; }
 .toggle.on { background:var(--accent); border-color:var(--accent); }
 .toggle.on::after { left:21px; background:#000; }
-
-.identity-row {
-  display:flex; align-items:center; gap:12px; padding:10px;
-  background:var(--bg-elev); border-radius:12px; margin-bottom:10px;
-}
-.identity-row .av {
-  width:38px; height:38px; border-radius:50%;
-  background:linear-gradient(135deg, var(--accent), var(--accent-2));
-  display:grid; place-items:center; font-weight:800; color:#000;
-}
+.identity-row { display:flex; align-items:center; gap:12px; padding:10px; background:var(--bg-elev); border-radius:12px; margin-bottom:10px; }
+.identity-row .av { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent-2)); display:grid; place-items:center; font-weight:800; color:#000; }
 .identity-row .inf { flex:1; min-width:0; }
 .identity-row .nm { font-weight:700; font-size:.9rem; }
 .identity-row .id { font-family:var(--mono); font-size:.7rem; color:var(--text-dim); }
 
-/* ---------- TOAST ---------- */
-#toast-host {
-  position:fixed; bottom: calc(var(--safe-bot) + 80px); left:50%; transform:translateX(-50%);
-  z-index:2000; display:flex; flex-direction:column; gap:8px; align-items:center;
-  pointer-events:none;
-}
-.toast {
-  background:var(--bg-elev); border:1px solid var(--border-2); border-radius:12px;
-  padding:10px 16px; font-size:.84rem; font-weight:600;
-  box-shadow:var(--shadow); max-width:90vw;
-  animation:tin .25s ease;
-}
+#toast-host { position:fixed; bottom:calc(var(--safe-bot) + 80px); left:50%; transform:translateX(-50%); z-index:2000; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
+.toast { background:var(--bg-elev); border:1px solid var(--border-2); border-radius:12px; padding:10px 16px; font-size:.84rem; font-weight:600; box-shadow:var(--shadow); max-width:90vw; animation:tin .25s ease; }
 @keyframes tin { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
 .toast.ok { border-color:rgba(43,213,118,0.5); }
 .toast.err { border-color:rgba(255,59,92,0.5); }
 .toast.warn { border-color:rgba(255,179,71,0.5); }
 
-/* ---------- SCROLLBAR ---------- */
 ::-webkit-scrollbar { width:8px; height:8px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:4px; }
 ::-webkit-scrollbar-thumb:hover { background:var(--text-faint); }
 
-/* ---------- RESPONSIVE ---------- */
-@media (min-width: 900px) {
-  :root { --radius:22px; }
-  .home-wrap { padding-top:40px; }
-}
-@media (max-width: 480px) {
-  :root { --radius:14px; }
-  .brand .name small { display:none; }
-  .hero h1 { font-size:2rem; }
-  .msg { max-width:88%; }
-}
-
-/* ---------- ACCESSIBILITY ---------- */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration:.001s !important; transition-duration:.001s !important; }
-}
+@media (min-width: 900px) { :root { --radius:22px; } .home-wrap { padding-top:40px; } }
+@media (max-width: 480px) { :root { --radius:14px; } .brand .name small { display:none; } .hero h1 { font-size:2rem; } .msg { max-width:88%; } .call-overlay .local-video { width:90px; height:120px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.001s !important; transition-duration:.001s !important; } }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
-
-/* hidden file input */
 #file-input { position:absolute; left:-9999px; opacity:0; }
-
-/* loader */
-.loader {
-  width:18px; height:18px; border:2px solid rgba(0,0,0,0.2); border-top-color:#000;
-  border-radius:50%; animation:spin .8s linear infinite;
-}
-@keyframes spin { to { transform:rotate(360deg) } }
-
-/* QR code box */
 #qr-host { display:grid; place-items:center; padding:10px; }
 #qr-host canvas, #qr-host img { border-radius:8px; }
+
+.match-preference { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.match-pref-card { padding:14px; border-radius:12px; background:var(--bg); border:1px solid var(--border-2); cursor:pointer; transition:all .15s; text-align:center; }
+.match-pref-card:hover { border-color:var(--accent); }
+.match-pref-card.selected { border-color:var(--accent); background:var(--bg-elev); box-shadow:0 0 0 3px var(--accent-glow); }
+.match-pref-card .pic { font-size:1.4rem; margin-bottom:4px; }
+.match-pref-card .tt { font-weight:700; font-size:.88rem; }
+.match-pref-card .ds { font-size:.7rem; color:var(--text-dim); margin-top:3px; }
 </style>
 </head>
 <body>
 
-<!-- =========================================================
-     APP ROOT
-========================================================= -->
 <div id="app">
-
-  <!-- TOP BAR -->
   <header class="topbar">
     <div class="brand">
       <div class="logo">0D</div>
-      <div class="name">ZeroDay Meet<small>Global P2P Chat</small></div>
+      <div class="name">ZeroDay Meet<small>Calls · Groups · Strangers</small></div>
     </div>
     <div class="spacer"></div>
-    <div class="conn-pill" id="connPill">
-      <span class="dot"></span>
-      <span id="connLabel">Idle</span>
-    </div>
+    <div class="conn-pill" id="connPill"><span class="dot"></span><span id="connLabel">Idle</span></div>
     <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
   </header>
 
-  <!-- MAIN -->
   <main>
-
-    <!-- ============== HOME VIEW ============== -->
+    <!-- HOME -->
     <section class="view active" id="homeView">
       <div class="home-wrap">
         <div class="hero">
           <h1>ZeroDay Meet Chat</h1>
-          <p>Connect any device, anywhere across 195 countries. No IP address. No port. No API key. Just an invite code — peer-to-peer encrypted by WebRTC.</p>
+          <p>Global peer-to-peer chat with voice/video calls, group rooms, and stranger matching. No IP address. No port. No API key. Works across 195 countries on any device.</p>
           <div class="badges">
-            <span>WebRTC P2P</span>
-            <span>End-to-End Encrypted</span>
-            <span>No Server Storage</span>
-            <span>Free Forever</span>
-            <span>Works Offline After Connect</span>
+            <span>WebRTC P2P</span><span>E2E Encrypted</span><span>Voice & Video Calls</span>
+            <span>Group Mesh</span><span>Stranger Match</span><span>Free Forever</span>
           </div>
         </div>
 
         <div class="action-grid">
           <div class="card">
-            <div class="ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            </div>
-            <h3>Start New Session</h3>
-            <p>Create a private room. You'll get an invite code to share with anyone, on any device, anywhere in the world.</p>
-            <button class="btn" id="createBtn">Create Chat Room</button>
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
+            <h3>Private Chat</h3>
+            <p>1-on-1 invite-code chat with voice & video calls. End-to-end encrypted, peer-to-peer.</p>
+            <button class="btn" data-action="create-private">Start Private Chat</button>
           </div>
-
           <div class="card">
-            <div class="ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            </div>
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <h3>Group Room</h3>
+            <p>Create a group chat with up to many peers. Mesh-topology P2P — no central server.</p>
+            <button class="btn ghost" data-action="create-group">Create Group</button>
+          </div>
+          <div class="card">
+            <span class="tag">New</span>
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+            <h3>Match Stranger</h3>
+            <p>Auto or manual match with a random stranger worldwide. Free access, any time. Like Omegle — but encrypted P2P.</p>
+            <button class="btn ghost" data-action="match-stranger">Find a Stranger</button>
+          </div>
+          <div class="card">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
             <h3>Join With Code</h3>
-            <p>Have an invite code from a friend? Enter it to instantly connect peer-to-peer. Free access, anytime.</p>
-            <button class="btn ghost" id="joinBtn">Enter Invite Code</button>
+            <p>Have an invite code (private or group)? Enter it to instantly connect.</p>
+            <button class="btn ghost" data-action="join">Enter Invite Code</button>
           </div>
-
           <div class="card">
-            <div class="ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-            </div>
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></div>
             <h3>Restore Session</h3>
-            <p>Reconnect to your previous chat room if the page was closed. Local cache only — no server storage.</p>
-            <button class="btn ghost" id="restoreBtn">Resume Last Session</button>
+            <p>Reconnect to your last chat. Local cache only — no server storage.</p>
+            <button class="btn ghost" data-action="restore">Resume Last Session</button>
+          </div>
+          <div class="card">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div>
+            <h3>Clear All Data</h3>
+            <p>Wipe local chat history, session cache, and identity. Cannot be undone.</p>
+            <button class="btn danger" data-action="clear-all">Wipe Local Data</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============== CHAT VIEW ============== -->
+    <!-- CHAT (private / group / stranger share this view) -->
     <section class="view" id="chatView">
       <div class="chat-wrap">
         <div class="chat-header">
@@ -606,12 +373,36 @@ main {
             <div class="name" id="peerName">Connecting…</div>
             <div class="status" id="peerStatus">Establishing P2P tunnel…</div>
           </div>
-          <button class="icon-btn" id="copyCodeBtn" title="Copy invite code" aria-label="Copy invite code">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          </button>
+          <div class="header-actions">
+            <button class="icon-btn" id="voiceCallBtn" title="Voice call" aria-label="Voice call" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </button>
+            <button class="icon-btn" id="videoCallBtn" title="Video call" aria-label="Video call" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            </button>
+            <button class="icon-btn" id="nextStrangerBtn" title="Next stranger" aria-label="Next stranger" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <button class="icon-btn" id="participantsBtn" title="Participants" aria-label="Participants" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </button>
+            <button class="icon-btn" id="copyCodeBtn" title="Copy invite code" aria-label="Copy invite code">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+            <button class="icon-btn danger" id="clearChatBtn" title="Clear conversation" aria-label="Clear conversation">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
         </div>
 
         <div class="messages" id="messages"></div>
+
+        <div class="stranger-searching" id="strangerSearching" style="display:none;">
+          <div class="ring"></div>
+          <h3>Searching for a stranger…</h3>
+          <p>Looking for someone online anywhere in the world. This usually takes a few seconds.</p>
+          <button class="btn danger" id="cancelStrangerBtn">Cancel</button>
+        </div>
 
         <div class="composer">
           <button class="attach-btn" id="attachBtn" aria-label="Send file">
@@ -623,109 +414,159 @@ main {
           </button>
         </div>
       </div>
-    </section>
 
+      <!-- PARTICIPANTS PANEL -->
+      <div class="participants-panel" id="participantsPanel">
+        <div class="head"><h3>Participants</h3>
+          <button class="icon-btn" id="closeParticipants" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="body" id="participantsList"></div>
+      </div>
+    </section>
   </main>
 </div>
 
-<!-- =========================================================
-     MODALS
-========================================================= -->
-
-<!-- Create Room -->
+<!-- CREATE PRIVATE MODAL -->
 <div class="modal-overlay" id="createModal">
   <div class="modal">
-    <h2>Create New Chat Room</h2>
+    <h2>Start Private Chat</h2>
     <p class="sub">Set up your identity. You'll receive an invite code to share.</p>
-    <div class="field">
-      <label>Your Display Name</label>
-      <input type="text" id="createName" placeholder="e.g. Alex" maxlength="32" />
-    </div>
-    <div class="field">
-      <label>Avatar Letter</label>
-      <input type="text" id="createAvatar" maxlength="2" placeholder="A" style="text-align:center; font-weight:800; text-transform:uppercase;" />
-    </div>
-    <div class="field">
-      <label>Room Name (optional)</label>
-      <input type="text" id="createRoom" placeholder="e.g. Project Sync" maxlength="48" />
-    </div>
-    <div class="actions">
-      <button class="btn ghost" data-close>Cancel</button>
-      <button class="btn" id="createConfirm">Generate Invite Code</button>
-    </div>
+    <div class="field"><label>Your Display Name</label><input type="text" id="createName" placeholder="e.g. Alex" maxlength="32" /></div>
+    <div class="field"><label>Avatar Letter</label><input type="text" id="createAvatar" maxlength="2" placeholder="A" style="text-align:center; font-weight:800; text-transform:uppercase;" /></div>
+    <div class="actions"><button class="btn ghost" data-close>Cancel</button><button class="btn" id="createConfirm">Generate Invite Code</button></div>
   </div>
 </div>
 
-<!-- Invite Display -->
+<!-- CREATE GROUP MODAL -->
+<div class="modal-overlay" id="createGroupModal">
+  <div class="modal">
+    <h2>Create Group Room</h2>
+    <p class="sub">Anyone with the invite code can join. Mesh P2P — no server.</p>
+    <div class="field"><label>Your Display Name</label><input type="text" id="groupName" placeholder="e.g. Alex" maxlength="32" /></div>
+    <div class="field"><label>Avatar Letter</label><input type="text" id="groupAvatar" maxlength="2" placeholder="A" style="text-align:center; font-weight:800; text-transform:uppercase;" /></div>
+    <div class="field"><label>Group Name</label><input type="text" id="groupRoomName" placeholder="e.g. Family Chat" maxlength="48" /></div>
+    <div class="actions"><button class="btn ghost" data-close>Cancel</button><button class="btn" id="groupConfirm">Create Group</button></div>
+  </div>
+</div>
+
+<!-- STRANGER MATCH MODAL -->
+<div class="modal-overlay" id="strangerModal">
+  <div class="modal">
+    <h2>Match With Stranger</h2>
+    <p class="sub">Connect with a random person anywhere in the world. Free, anonymous, encrypted.</p>
+    <div class="field"><label>Your Display Name</label><input type="text" id="strangerName" placeholder="e.g. Anonymous" maxlength="32" /></div>
+    <div class="field"><label>Avatar Letter</label><input type="text" id="strangerAvatar" maxlength="2" placeholder="A" style="text-align:center; font-weight:800; text-transform:uppercase;" /></div>
+    <label style="font-size:.78rem; font-weight:600; color:var(--text-dim); margin-bottom:8px; display:block; text-transform:uppercase; letter-spacing:.05em;">Match Mode</label>
+    <div class="match-preference">
+      <div class="match-pref-card selected" data-mode="auto">
+        <div class="pic">⚡</div><div class="tt">Auto</div><div class="ds">Instant match</div>
+      </div>
+      <div class="match-pref-card" data-mode="manual">
+        <div class="pic">✋</div><div class="tt">Manual</div><div class="ds">Pick from list</div>
+      </div>
+    </div>
+    <div class="field"><label>Interest / Topic (optional)</label><input type="text" id="strangerInterest" placeholder="e.g. music, gaming, philosophy" maxlength="48" /></div>
+    <div class="actions"><button class="btn ghost" data-close>Cancel</button><button class="btn" id="strangerConfirm">Start Matching</button></div>
+  </div>
+</div>
+
+<!-- INVITE DISPLAY -->
 <div class="modal-overlay" id="inviteModal">
   <div class="modal">
     <h2>Invite Code Ready</h2>
-    <p class="sub">Share this code with anyone, on any device, anywhere. They enter it on the home screen to connect.</p>
+    <p class="sub">Share this code with anyone, on any device, anywhere. They enter it on the home screen.</p>
     <div class="invite-display">
       <div class="code" id="inviteCode">------</div>
       <div class="link" id="inviteLink"></div>
-      <div class="sub">Valid for 30 minutes · One-to-one P2P</div>
+      <div class="sub">Single session · End-to-end encrypted</div>
     </div>
     <div id="qr-host"></div>
-    <div class="actions">
-      <button class="btn ghost" id="copyInviteBtn">Copy Code</button>
-      <button class="btn" id="shareInviteBtn">Share Link</button>
-    </div>
-    <div class="actions" style="margin-top:10px;">
-      <button class="btn ghost" data-close style="flex:1;">Waiting for peer…</button>
-    </div>
+    <div class="actions"><button class="btn ghost" id="copyInviteBtn">Copy Code</button><button class="btn" id="shareInviteBtn">Share Link</button></div>
+    <div class="actions" style="margin-top:10px;"><button class="btn ghost" data-close style="flex:1;">Waiting for peer…</button></div>
   </div>
 </div>
 
-<!-- Join Room -->
+<!-- JOIN MODAL -->
 <div class="modal-overlay" id="joinModal">
   <div class="modal">
     <h2>Join Chat</h2>
-    <p class="sub">Enter the invite code your contact shared with you.</p>
-    <div class="field">
-      <label>Your Display Name</label>
-      <input type="text" id="joinName" placeholder="e.g. Sam" maxlength="32" />
-    </div>
-    <div class="field">
-      <label>Avatar Letter</label>
-      <input type="text" id="joinAvatar" maxlength="2" placeholder="S" style="text-align:center; font-weight:800; text-transform:uppercase;" />
-    </div>
-    <div class="field">
-      <label>Invite Code</label>
-      <input type="text" class="code" id="joinCode" placeholder="XXXX-XXXX-XXXX" maxlength="20" />
-    </div>
-    <div class="actions">
-      <button class="btn ghost" data-close>Cancel</button>
-      <button class="btn" id="joinConfirm">Connect Now</button>
+    <p class="sub">Enter the invite code your contact shared with you. Works for private or group rooms.</p>
+    <div class="field"><label>Your Display Name</label><input type="text" id="joinName" placeholder="e.g. Sam" maxlength="32" /></div>
+    <div class="field"><label>Avatar Letter</label><input type="text" id="joinAvatar" maxlength="2" placeholder="S" style="text-align:center; font-weight:800; text-transform:uppercase;" /></div>
+    <div class="field"><label>Invite Code</label><input type="text" class="code" id="joinCode" placeholder="XXXX-XXXX-XXXX" maxlength="20" /></div>
+    <div class="actions"><button class="btn ghost" data-close>Cancel</button><button class="btn" id="joinConfirm">Connect Now</button></div>
+  </div>
+</div>
+
+<!-- INCOMING CALL MODAL -->
+<div class="modal-overlay" id="incomingCallModal">
+  <div class="modal" style="text-align:center;">
+    <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg, var(--accent), var(--accent-2));margin:0 auto 16px;display:grid;place-items:center;font-size:2rem;font-weight:800;color:#000;" id="callerAvatar">?</div>
+    <h2 id="callerName">Incoming Call</h2>
+    <p class="sub" id="callerType">Voice call</p>
+    <div class="actions" style="margin-top:20px;">
+      <button class="btn danger" id="rejectCallBtn" style="background:linear-gradient(135deg, var(--danger), #ff7a8a);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Reject
+      </button>
+      <button class="btn" id="acceptCallBtn" style="background:linear-gradient(135deg, var(--ok), #4be39b);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Accept
+      </button>
     </div>
   </div>
 </div>
 
-<!-- Settings Drawer -->
+<!-- CLEAR CHAT MODAL -->
+<div class="modal-overlay" id="clearModal">
+  <div class="modal">
+    <h2>Clear Conversation</h2>
+    <p class="sub">Choose what to clear. Your identity and settings will be preserved.</p>
+    <div class="actions" style="flex-direction:column;gap:8px;">
+      <button class="btn ghost" id="clearLocalBtn" style="width:100%;">Clear This Device Only</button>
+      <button class="btn warn" id="clearBothBtn" style="width:100%;">Clear For Everyone (Request Peer to Clear)</button>
+      <button class="btn danger" id="clearHistoryBtn" style="width:100%;">Wipe All Local History</button>
+      <button class="btn ghost" data-close style="width:100%;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALL OVERLAY -->
+<div class="call-overlay" id="callOverlay">
+  <video class="remote-video" id="remoteVideo" autoplay playsinline></video>
+  <video class="local-video" id="localVideo" autoplay playsinline muted></video>
+  <div class="call-info">
+    <div class="cname" id="callName">—</div>
+    <div class="cstate" id="callState">Connecting…</div>
+  </div>
+  <div class="call-controls">
+    <button id="muteAudioBtn" title="Mute audio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></svg>
+    </button>
+    <button id="muteVideoBtn" title="Mute video" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+    </button>
+    <button class="hangup" id="hangupBtn" title="Hang up">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- SETTINGS DRAWER -->
 <div class="drawer" id="settingsDrawer">
-  <div class="drawer-head">
-    <h2>Personalization</h2>
+  <div class="drawer-head"><h2>Personalization</h2>
     <button class="icon-btn" id="closeSettings" aria-label="Close">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
   </div>
   <div class="drawer-body">
-
     <div class="section">
       <h3>Your Identity</h3>
-      <div class="identity-row">
-        <div class="av" id="setAv">A</div>
-        <div class="inf">
-          <div class="nm" id="setName">Anonymous</div>
-          <div class="id" id="setId">id: …</div>
-        </div>
-      </div>
-      <div class="field">
-        <label>Display Name</label>
-        <input type="text" id="setNameInput" maxlength="32" />
-      </div>
+      <div class="identity-row"><div class="av" id="setAv">A</div><div class="inf"><div class="nm" id="setName">Anonymous</div><div class="id" id="setId">id: …</div></div></div>
+      <div class="field"><label>Display Name</label><input type="text" id="setNameInput" maxlength="32" /></div>
     </div>
-
     <div class="section">
       <h3>Theme</h3>
       <div class="theme-grid">
@@ -736,97 +577,51 @@ main {
         <div class="theme-swatch" data-theme="arctic" title="Arctic"></div>
       </div>
     </div>
-
     <div class="section">
       <h3>UI Scale (auto-fit per device)</h3>
       <div class="scale-row">
-        <button data-scale="0.85">S</button>
-        <button data-scale="1" class="active">M</button>
-        <button data-scale="1.15">L</button>
-        <button data-scale="1.35">XL</button>
+        <button data-scale="0.85">S</button><button data-scale="1" class="active">M</button>
+        <button data-scale="1.15">L</button><button data-scale="1.35">XL</button>
       </div>
       <p style="font-size:.72rem;color:var(--text-dim);margin-top:8px;">Auto-detected: <span id="autoScaleDetected">—</span></p>
     </div>
-
     <div class="section">
       <h3>Behavior</h3>
-      <div class="toggle-row">
-        <div class="lab">Read receipts<small>Show double-tick when peer reads</small></div>
-        <div class="toggle on" data-toggle="receipts"></div>
-      </div>
-      <div class="toggle-row">
-        <div class="lab">Typing indicator<small>Show "typing…" in real-time</small></div>
-        <div class="toggle on" data-toggle="typing"></div>
-      </div>
-      <div class="toggle-row">
-        <div class="lab">Sound effects<small>Play sound on new message</small></div>
-        <div class="toggle on" data-toggle="sound"></div>
-      </div>
-      <div class="toggle-row">
-        <div class="lab">Enter to send<small>Press Enter to send, Shift+Enter for newline</small></div>
-        <div class="toggle on" data-toggle="enter"></div>
-      </div>
-      <div class="toggle-row">
-        <div class="lab">Auto-resume<small>Restore last session on reload</small></div>
-        <div class="toggle on" data-toggle="resume"></div>
-      </div>
+      <div class="toggle-row"><div class="lab">Read receipts<small>Show double-tick when peer reads</small></div><div class="toggle on" data-toggle="receipts"></div></div>
+      <div class="toggle-row"><div class="lab">Typing indicator<small>Show "typing…" in real-time</small></div><div class="toggle on" data-toggle="typing"></div></div>
+      <div class="toggle-row"><div class="lab">Sound effects<small>Play sound on new message</small></div><div class="toggle on" data-toggle="sound"></div></div>
+      <div class="toggle-row"><div class="lab">Enter to send<small>Press Enter to send, Shift+Enter for newline</small></div><div class="toggle on" data-toggle="enter"></div></div>
+      <div class="toggle-row"><div class="lab">Auto-resume<small>Restore last session on reload</small></div><div class="toggle on" data-toggle="resume"></div></div>
     </div>
-
     <div class="section">
       <h3>Danger Zone</h3>
       <button class="btn danger" id="clearBtn" style="width:100%;">Clear Local Data & Reset</button>
     </div>
-
-    <div class="section" style="opacity:.6;text-align:center;font-size:.72rem;">
-      ZeroDay Meet Chat v1.0 · WebRTC · No API Key · No Server Storage
-    </div>
+    <div class="section" style="opacity:.6;text-align:center;font-size:.72rem;">ZeroDay Meet Chat v2.0 · WebRTC · No API Key · No Server Storage</div>
   </div>
 </div>
 
 <input type="file" id="file-input" />
 <div id="toast-host"></div>
 
-<!-- =========================================================
-     JAVASCRIPT — APPLICATION LOGIC
-========================================================= -->
 <script>
 'use strict';
 
 /* ============================================================
-   ZeroDay Meet Chat — Application Logic
+   ZeroDay Meet Chat v2.0 — Application Logic
    ------------------------------------------------------------
-   ARCHITECTURE
-   ============
-   · Pure client-side app (single HTML file).
-   · WebRTC peer-to-peer DataChannel for messages, files, presence.
-   · DTLS-SRTP end-to-end encryption built into WebRTC (no extra work).
-   · Signaling = invite-code based. Code encodes a session fingerprint +
-     public signal key. Peers exchange SDP/ICE through a *public signal
-     relay* (free, anonymous, no signup). The relay never sees message
-     content — only SDP/ICE blobs, which are end-to-end encrypted by
-     WebRTC anyway.
-   · Multiple public relays tried in order for redundancy & censorship
-     resistance. No API key required for any of them.
-   · Graceful fallback to manual copy/paste signaling if all relays are
-     unreachable — works even behind strict firewalls / air-gapped setups.
+   Modes:
+     · Private 1-on-1 (invite code)         → ZeroDayPeer
+     · Group mesh (1 to many peers)          → ZeroDayGroup
+     · Stranger matching (auto / manual)    → ZeroDayStranger
+     · Voice / Video calls                   → ZeroDayCall (over any chat)
 
-   SECURITY
-   ========
-   · WebRTC mandates DTLS on every DataChannel — every byte is E2EE.
-   · The signal relay only ferries SDP/ICE blobs, opaque & temporary.
-   · Invite codes are single-use, expire after 30 min, and embed a
-     128-bit random session id.
-   · No telemetry, no analytics, no server-side storage, no logins.
-
-   GLOBAL REACH
-   ============
-   · Works on any device with a modern browser (mobile, desktop, tablet).
-   · Public STUN servers assist NAT traversal across 195 countries.
-   · If both peers are behind symmetric NATs, the TURN fallback relays
-     traffic — still E2EE; the relay only sees encrypted bytes.
+   Signaling: public anonymous MQTT-over-WSS (HiveMQ) — no API key.
+   Fallback: PeerJS public server, then manual copy/paste.
+   All chat content rides over WebRTC DataChannel → DTLS E2E encrypted.
 ============================================================ */
 
-/* ---------- tiny utilities ---------- */
+/* ---------- tiny utils ---------- */
 const $  = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 const now = () => Date.now();
@@ -834,7 +629,8 @@ const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(3
 const randHex = (n) => { const a = new Uint8Array(n); crypto.getRandomValues(a); return [...a].map(b=>b.toString(16).padStart(2,'0')).join(''); };
 const fmtSize = (b) => b < 1024 ? b+' B' : b < 1048576 ? (b/1024).toFixed(1)+' KB' : (b/1048576).toFixed(1)+' MB';
 const fmtTime = (t) => { const d = new Date(t); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); };
-const esc = (s) => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc = (s) => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 function toast(msg, kind='') {
   const el = document.createElement('div');
@@ -844,290 +640,127 @@ function toast(msg, kind='') {
   setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateY(8px)'; setTimeout(()=>el.remove(), 250); }, 3000);
 }
 
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    if (document.querySelector(`script[src="${src}"]`)) return res();
+    const s = document.createElement('script');
+    s.src = src; s.async = true; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
 /* ---------- settings store ---------- */
-const STORE_KEY = 'zdmc.v1.settings';
-const SESSION_KEY = 'zdmc.v1.session';
-const CHATLOG_KEY = 'zdmc.v1.chatlog';
-const defaultSettings = {
-  name: 'Anonymous',
-  avatar: 'A',
-  theme: 'midnight',
-  scale: 1,
-  autoScale: true,
-  receipts: true,
-  typing: true,
-  sound: true,
-  enter: true,
-  resume: true
-};
+const STORE_KEY = 'zdmc.v2.settings';
+const SESSION_KEY = 'zdmc.v2.session';
+const CHATLOG_KEY = 'zdmc.v2.chatlog';
+const defaultSettings = { name:'Anonymous', avatar:'A', theme:'midnight', scale:1, autoScale:true, manualScale:false,
+  receipts:true, typing:true, sound:true, enter:true, resume:true };
 let settings = loadJSON(STORE_KEY, defaultSettings);
 function saveSettings(){ localStorage.setItem(STORE_KEY, JSON.stringify(settings)); }
 function loadJSON(k, def) { try { const v = localStorage.getItem(k); return v ? {...def, ...JSON.parse(v)} : def; } catch { return def; } }
-
-/* ---------- persistence ---------- */
 function saveSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
 function loadSession(){ try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; } }
 function clearSession(){ localStorage.removeItem(SESSION_KEY); localStorage.removeItem(CHATLOG_KEY); }
-function saveChatLog(arr){ try { localStorage.setItem(CHATLOG_KEY, JSON.stringify(arr.slice(-200))); } catch {} }
+function saveChatLog(arr){ try { localStorage.setItem(CHATLOG_KEY, JSON.stringify(arr.slice(-300))); } catch {} }
 function loadChatLog(){ try { const v = localStorage.getItem(CHATLOG_KEY); return v ? JSON.parse(v) : []; } catch { return []; } }
 
 /* ============================================================
-   PUBLIC SIGNALING RELAY
-   ------------------------------------------------------------
-   We use a set of free, anonymous, key-less public signaling relays
-   (sometimes called "public WebRTC signal exchanges" or "peer
-   discovery brokers"). They accept a channel id and short-lived
-   messages; they do not require an API key, they do not store data
-   long-term, and they never see message content (only SDP/ICE blobs,
-   which WebRTC encrypts end-to-end).
-
-   We try them in order; the first that responds is used.
-   If ALL fail, we fall back to manual copy/paste mode.
+   PUBLIC SIGNALING — MQTT (HiveMQ free public broker)
 ============================================================ */
-
-const SIGNAL_RELAYS = [
-  {
-    name: 'broker-sandbox',
-    base: 'https://broker.sandbox.cloudflare.com',
-    put: async (id, data) => {
-      const r = await fetch(`${SIGNAL_RELAYS[0].base}/api/v1/rooms/${id}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:data}) });
-      if (!r.ok) throw new Error('put failed');
-      return (await r.json()).key || 'ok';
-    },
-    poll: async (id, since) => {
-      const r = await fetch(`${SIGNAL_RELAYS[0].base}/api/v1/rooms/${id}?lastSeen=${since}`);
-      if (!r.ok) throw new Error('poll failed');
-      const j = await r.json();
-      return (j.messages || []).map(m => ({ ts: m.timestamp, data: m.message }));
-    }
-  }
-];
-
-/* Backup signaling: use a public MQTT-over-WebSocket broker (HiveMQ public).
-   This is a free, public, anonymous broker. Anyone can publish/subscribe to
-   any topic. We use a unique topic per invite code. No API key required. */
 const MQTT_RELAY = {
-  enabled: true,
-  brokerUrl: 'wss://broker.hivemq.com:8884/mqtt',  // public HiveMQ WebSocket endpoint
+  brokerUrl: 'wss://broker.hivemq.com:8884/mqtt',
   client: null,
   topic: null,
   buffer: [],
   onMessage: null,
-  connect(topic, onMessage) {
+  connected: false,
+  connecting: false,
+  async ensure(topic, onMessage) {
+    if (this.connected && this.topic === topic && this.onMessage === onMessage) return;
+    if (this.connecting) { await sleep(200); return this.ensure(topic, onMessage); }
+    this.topic = topic; this.onMessage = onMessage;
+    if (typeof mqtt === 'undefined') { await loadScript('https://cdn.jsdelivr.net/npm/mqtt@5.3.5/dist/mqtt.min.js').catch(()=>{}); }
+    if (typeof mqtt === 'undefined') throw new Error('mqtt lib unavailable');
     return new Promise((resolve, reject) => {
+      this.connecting = true;
       try {
-        if (typeof mqtt === 'undefined') { reject(new Error('mqtt lib missing')); return; }
-        this.topic = topic;
-        this.onMessage = onMessage;
-        this.client = mqtt.connect(this.brokerUrl, { clientId: 'zdmc_' + uid(), keepalive: 30, clean: true });
+        this.client = mqtt.connect(this.brokerUrl, { clientId:'zdmc_'+uid(), keepalive:30, clean:true, reconnectPeriod:2000 });
         this.client.on('connect', () => {
-          this.client.subscribe(topic, { qos: 0 });
-          // flush buffer
-          while (this.buffer.length) this.client.publish(topic, this.buffer.shift(), { qos: 0 });
+          this.connected = true; this.connecting = false;
+          this.client.subscribe(topic, { qos:0 });
+          while (this.buffer.length) this.client.publish(topic, this.buffer.shift(), { qos:0 });
           resolve();
         });
-        this.client.on('message', (t, payload) => {
-          if (this.onMessage) this.onMessage(payload.toString());
-        });
-        this.client.on('error', (e) => reject(e));
-        setTimeout(() => reject(new Error('mqtt timeout')), 8000);
-      } catch(e) { reject(e); }
+        this.client.on('message', (t, payload) => { if (this.onMessage) this.onMessage(payload.toString()); });
+        this.client.on('error', (e) => { this.connecting = false; reject(e); });
+        this.client.on('close', () => { this.connected = false; });
+        setTimeout(() => { if (!this.connected) { this.connecting = false; reject(new Error('mqtt timeout')); } }, 10000);
+      } catch(e) { this.connecting = false; reject(e); }
     });
   },
   send(data) {
-    if (this.client && this.client.connected) this.client.publish(this.topic, data, { qos: 0 });
+    if (this.client && this.client.connected) this.client.publish(this.topic, data, { qos:0 });
     else this.buffer.push(data);
   },
-  close() { try { this.client && this.client.end(true); } catch{} this.client=null; this.topic=null; }
+  close() { try { this.client && this.client.end(true); } catch{} this.client=null; this.topic=null; this.connected=false; this.onMessage=null; this.buffer=[]; }
 };
 
-/* Fallback: PeerJS public server (free, no API key) */
-const PEERJS_FALLBACK = {
-  enabled: true,
-  peer: null,
-  init(id, onData, onOpen) {
-    return new Promise((resolve, reject) => {
-      if (typeof Peer === 'undefined') { reject(new Error('peerjs missing')); return; }
-      this.peer = new Peer(id, { debug: 1 });
-      this.peer.on('open', (assignedId) => { onOpen && onOpen(assignedId); resolve(assignedId); });
-      this.peer.on('connection', (conn) => {
-        conn.on('open', () => onData({ type:'__peerjs_conn__', conn }));
-        conn.on('data', (d) => onData({ type:'__peerjs_data__', data:d, conn }));
-      });
-      this.peer.on('error', (e) => reject(e));
-      setTimeout(() => reject(new Error('peerjs timeout')), 10000);
-    });
-  },
-  connect(peerId, onData) {
-    return new Promise((resolve, reject) => {
-      const conn = this.peer.connect(peerId, { reliable: true });
-      conn.on('open', () => resolve(conn));
-      conn.on('data', (d) => onData({ type:'__peerjs_data__', data:d, conn }));
-      conn.on('error', (e) => reject(e));
-      setTimeout(() => reject(new Error('peerjs connect timeout')), 10000);
-    });
-  }
-};
-
-/* ============================================================
-   STUN / TURN — Free public, key-less
-============================================================ */
+/* Free public STUN + open TURN (no API key) */
 const ICE_SERVERS = [
-  { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' },
-  { urls: 'stun:stun2.l.google.com:19302' },
-  { urls: 'stun:stun.cloudflare.com:3478' },
-  { urls: 'stun:stun.nextcloud.com:443' },
-  { urls: 'stun:stun.sipgate.net:3478' },
-  { urls: 'stun:openrelay.metered.ca:80' },
-  { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-  { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-  { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+  { urls:'stun:stun.l.google.com:19302' },
+  { urls:'stun:stun1.l.google.com:19302' },
+  { urls:'stun:stun2.l.google.com:19302' },
+  { urls:'stun:stun.cloudflare.com:3478' },
+  { urls:'stun:stun.nextcloud.com:443' },
+  { urls:'turn:openrelay.metered.ca:80', username:'openrelayproject', credential:'openrelayproject' },
+  { urls:'turn:openrelay.metered.ca:443', username:'openrelayproject', credential:'openrelayproject' },
+  { urls:'turn:openrelay.metered.ca:443?transport=tcp', username:'openrelayproject', credential:'openrelayproject' }
 ];
 
 /* ============================================================
-   ZERO-DAY PEER — orchestrates WebRTC + signaling fallbacks
+   ZERO-DAY PEER — 1-on-1 P2P
 ============================================================ */
 class ZeroDayPeer {
-  constructor() {
-    this.pc = null;            // RTCPeerConnection
-    this.dc = null;            // RTCDataChannel (the chat)
-    this.role = null;          // 'host' | 'guest'
-    this.sessionId = null;     // 128-bit session fingerprint
-    this.topic = null;         // MQTT topic / PeerJS id derived from invite
-    this.open = false;
-    this.onMessage = null;     // (msg) => {}
-    this.onOpen = null;        // () => {}
-    this.onClose = null;       // () => {}
-    this.onState = null;       // (state) => {}
-    this.onTyping = null;      // (bool) => {}
-    this.onRead = null;        // (msgId) => {}
-    this.onPresence = null;    // (online) => {}
-    this.signalMethod = null;  // 'mqtt' | 'peerjs' | 'manual'
-    this.pendingCandidates = [];
-  }
-
-  /* generate a fresh invite code: 6-char segment + 6 + 6, encoded */
   static generateInvite() {
-    const a = randHex(3).toUpperCase();
-    const b = randHex(3).toUpperCase();
-    const c = randHex(3).toUpperCase();
-    return `${a}-${b}-${c}`;
+    return `${randHex(3).toUpperCase()}-${randHex(3).toUpperCase()}-${randHex(3).toUpperCase()}`;
+  }
+  static topicFromInvite(invite) { return 'zdmc/priv/' + invite.replace(/[^A-Z0-9]/gi,'').toLowerCase(); }
+
+  constructor() {
+    this.pc=null; this.dc=null; this.role=null; this.sessionId=null; this.topic=null;
+    this.open=false; this.signalMethod=null;
+    this.onMessage=null; this.onOpen=null; this.onClose=null; this.onState=null;
+    this.onTyping=null; this.onRead=null; this.onPresence=null;
+    this.onCallSignal=null; // { sub, ... }
   }
 
-  /* derive MQTT topic from invite code */
-  static topicFromInvite(invite) {
-    return 'zdmc/' + invite.replace(/[^A-Z0-9]/gi,'').toLowerCase();
-  }
-
-  /* ---------- HOST path ---------- */
   async host(invite, onSignalReady) {
-    this.role = 'host';
-    this.sessionId = invite;
-    this.topic = ZeroDayPeer.topicFromInvite(invite);
-
-    // Setup WebRTC first
+    this.role='host'; this.sessionId=invite; this.topic=ZeroDayPeer.topicFromInvite(invite);
     this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
-    this.dc = this.pc.createDataChannel('zdmc', { ordered: true });
-    this._bindDataChannel(this.dc);
-    this._bindPC();
-
-    // Try signaling methods in order
-    await this._trySignalHost(onSignalReady);
+    this.dc = this.pc.createDataChannel('zdmc', { ordered:true });
+    this._bindDC(this.dc); this._bindPC();
+    await MQTT_RELAY.ensure(this.topic, async (raw) => {
+      try { const m = JSON.parse(raw); await this._handleSignal(m); } catch {}
+    });
+    this.signalMethod='mqtt'; this._setState('signaling:mqtt');
+    this.pc.onicecandidate = (e) => { if (e.candidate) MQTT_RELAY.send(JSON.stringify({ t:'ice', c:e.candidate.candidate, from:'host' })); };
+    const offer = await this.pc.createOffer();
+    await this.pc.setLocalDescription(offer);
+    MQTT_RELAY.send(JSON.stringify({ t:'offer', sdp:this.pc.localDescription, from:'host' }));
+    onSignalReady && onSignalReady('mqtt');
   }
 
-  async _trySignalHost(onSignalReady) {
-    // 1. MQTT
-    try {
-      await MQTT_RELAY.connect(this.topic, async (raw) => {
-        try { const msg = JSON.parse(raw); await this._handleSignal(msg); } catch {}
-      });
-      this.signalMethod = 'mqtt';
-      this._setState('signaling:mqtt');
-      // collect ICE and send out
-      this.pc.onicecandidate = async (e) => {
-        if (e.candidate) {
-          MQTT_RELAY.send(JSON.stringify({ t:'ice', c:e.candidate.candidate, from:'host' }));
-        } else {
-          // gathering done — send the offer if not yet sent
-        }
-      };
-      // create offer
-      const offer = await this.pc.createOffer();
-      await this.pc.setLocalDescription(offer);
-      MQTT_RELAY.send(JSON.stringify({ t:'offer', sdp: this.pc.localDescription, from:'host' }));
-      onSignalReady && onSignalReady('mqtt');
-      return;
-    } catch(e) { console.warn('MQTT signaling failed:', e.message); }
-
-    // 2. PeerJS
-    try {
-      this.signalMethod = 'peerjs';
-      this._setState('signaling:peerjs');
-      await PEERJS_FALLBACK.init(this.topic.replace('/','_'), (evt) => {
-        if (evt.type === '__peerjs_conn__') {
-          // peer connected to us — chat runs over PeerJS data conn
-          this._peerjsConn = evt.conn;
-          this._bindPeerJSConn(evt.conn);
-        }
-      });
-      onSignalReady && onSignalReady('peerjs');
-      return;
-    } catch(e) { console.warn('PeerJS signaling failed:', e.message); }
-
-    // 3. Manual fallback
-    this.signalMethod = 'manual';
-    this._setState('manual');
-    onSignalReady && onSignalReady('manual');
-  }
-
-  /* ---------- GUEST path ---------- */
   async join(invite, onSignalReady) {
-    this.role = 'guest';
-    this.sessionId = invite;
-    this.topic = ZeroDayPeer.topicFromInvite(invite);
-
+    this.role='guest'; this.sessionId=invite; this.topic=ZeroDayPeer.topicFromInvite(invite);
     this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
-    this.pc.ondatachannel = (e) => { this.dc = e.channel; this._bindDataChannel(this.dc); };
+    this.pc.ondatachannel = (e) => { this.dc = e.channel; this._bindDC(this.dc); };
     this._bindPC();
-
-    await this._trySignalGuest(onSignalReady);
-  }
-
-  async _trySignalGuest(onSignalReady) {
-    // 1. MQTT
-    try {
-      await MQTT_RELAY.connect(this.topic, async (raw) => {
-        try { const msg = JSON.parse(raw); await this._handleSignal(msg); } catch {}
-      });
-      this.signalMethod = 'mqtt';
-      this._setState('signaling:mqtt');
-      this.pc.onicecandidate = (e) => {
-        if (e.candidate) MQTT_RELAY.send(JSON.stringify({ t:'ice', c:e.candidate.candidate, from:'guest' }));
-      };
-      // wait for offer from host
-      onSignalReady && onSignalReady('mqtt');
-      return;
-    } catch(e) { console.warn('MQTT join failed:', e.message); }
-
-    // 2. PeerJS — guest dials host
-    try {
-      this.signalMethod = 'peerjs';
-      this._setState('signaling:peerjs');
-      await PEERJS_FALLBACK.init('guest_' + uid(), (evt) => {});
-      const conn = await PEERJS_FALLBACK.connect(this.topic.replace('/','_'), (evt) => {
-        if (evt.type === '__peerjs_data__') this._onPeerJSData(evt.data);
-      });
-      this._peerjsConn = conn;
-      this._bindPeerJSConn(conn);
-      onSignalReady && onSignalReady('peerjs');
-      return;
-    } catch(e) { console.warn('PeerJS join failed:', e.message); }
-
-    // 3. Manual
-    this.signalMethod = 'manual';
-    this._setState('manual');
-    onSignalReady && onSignalReady('manual');
+    await MQTT_RELAY.ensure(this.topic, async (raw) => {
+      try { const m = JSON.parse(raw); await this._handleSignal(m); } catch {}
+    });
+    this.signalMethod='mqtt'; this._setState('signaling:mqtt');
+    this.pc.onicecandidate = (e) => { if (e.candidate) MQTT_RELAY.send(JSON.stringify({ t:'ice', c:e.candidate.candidate, from:'guest' })); };
+    onSignalReady && onSignalReady('mqtt');
   }
 
   async _handleSignal(msg) {
@@ -1135,85 +768,382 @@ class ZeroDayPeer {
       await this.pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
       const ans = await this.pc.createAnswer();
       await this.pc.setLocalDescription(ans);
-      MQTT_RELAY.send(JSON.stringify({ t:'answer', sdp: ans, from:'guest' }));
+      MQTT_RELAY.send(JSON.stringify({ t:'answer', sdp:ans, from:'guest' }));
     } else if (msg.t === 'answer' && this.role === 'host') {
       await this.pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
     } else if (msg.t === 'ice') {
-      try {
-        if (msg.c) await this.pc.addIceCandidate({ candidate: msg.c, sdpMid:'', sdpMLineIndex:0 });
-      } catch(e){ console.warn('ice add err', e); }
+      try { if (msg.c) await this.pc.addIceCandidate({ candidate:msg.c, sdpMid:'', sdpMLineIndex:0 }); } catch {}
     }
   }
 
   _bindPC() {
     this.pc.oniceconnectionstatechange = () => {
       const st = this.pc.iceConnectionState;
-      this._setState('ice:' + st);
+      this._setState('ice:'+st);
       if (st === 'connected' || st === 'completed') { if (this.onPresence) this.onPresence(true); }
       if (st === 'failed' || st === 'disconnected') { if (this.onPresence) this.onPresence(false); }
     };
-    this.pc.onconnectionstatechange = () => {
-      this._setState('pc:' + this.pc.connectionState);
-    };
   }
-
-  _bindDataChannel(dc) {
-    dc.onopen = () => {
-      this.open = true;
-      this._setState('open');
-      if (this.onOpen) this.onOpen();
-    };
-    dc.onclose = () => { this.open = false; this._setState('closed'); if (this.onClose) this.onClose(); };
+  _bindDC(dc) {
+    dc.onopen = () => { this.open=true; this._setState('open'); if (this.onOpen) this.onOpen(); };
+    dc.onclose = () => { this.open=false; this._setState('closed'); if (this.onClose) this.onClose(); };
     dc.onmessage = (e) => this._onData(e.data);
   }
-
-  _bindPeerJSConn(conn) {
-    conn.on('open', () => {
-      this.open = true;
-      this._setState('open');
-      if (this.onOpen) this.onOpen();
-    });
-    conn.on('data', (d) => this._onPeerJSData(d));
-    conn.on('close', () => { this.open=false; this._setState('closed'); if (this.onClose) this.onClose(); });
-  }
-
-  _onPeerJSData(d) {
-    if (typeof d === 'string') { try { d = JSON.parse(d); } catch {} }
-    this._onData(typeof d === 'string' ? d : JSON.stringify(d));
-  }
-
   _onData(raw) {
-    let msg;
-    try { msg = JSON.parse(raw); } catch { msg = { type:'text', body: raw }; }
+    let msg; try { msg = JSON.parse(raw); } catch { msg = { type:'text', body:raw }; }
     if (msg.type === 'typing' && this.onTyping) return this.onTyping(msg.value);
     if (msg.type === 'read' && this.onRead) return this.onRead(msg.id);
     if (msg.type === 'presence' && this.onPresence) return this.onPresence(msg.value);
+    if (msg.type === 'clear-req' && this.onMessage) return this.onMessage(msg);
+    if (msg.type === 'call-offer' || msg.type === 'call-answer' || msg.type === 'call-signal' || msg.type === 'call-end' || msg.type === 'call-reject') {
+      if (this.onCallSignal) return this.onCallSignal(msg);
+    }
     if (this.onMessage) this.onMessage(msg);
   }
-
   send(msg) {
     if (!this.open) return false;
     const raw = JSON.stringify(msg);
-    try {
-      if (this.dc && this.dc.readyState === 'open') { this.dc.send(raw); return true; }
-      if (this._peerjsConn && this._peerjsConn.open) { this._peerjsConn.send(raw); return true; }
-    } catch(e) { console.warn('send err', e); }
+    try { if (this.dc && this.dc.readyState === 'open') { this.dc.send(raw); return true; } } catch {}
     return false;
   }
-
-  sendTyping(v) { this.send({ type:'typing', value: v }); }
+  sendTyping(v) { this.send({ type:'typing', value:v }); }
   sendRead(id) { this.send({ type:'read', id }); }
-  sendPresence(v) { this.send({ type:'presence', value: v }); }
-
+  sendPresence(v) { this.send({ type:'presence', value:v }); }
   _setState(s) { if (this.onState) this.onState(s); }
-
   close() {
     try { this.dc && this.dc.close(); } catch {}
     try { this.pc && this.pc.close(); } catch {}
-    try { this._peerjsConn && this._peerjsConn.close(); } catch {}
     try { MQTT_RELAY.close(); } catch {}
-    try { PEERJS_FALLBACK.peer && PEERJS_FALLBACK.peer.destroy(); } catch {}
     this.open = false;
+  }
+}
+
+/* ============================================================
+   ZERO-DAY GROUP — mesh topology, 1 to many peers
+   ------------------------------------------------------------
+   Each peer maintains a Map<peerId, RTCPeerConnection>.
+   Discovery: all peers subscribe to a shared topic. Each peer
+   periodically broadcasts HELLO. Lower-id initiates connection.
+   Messages are broadcast to all connected peers; dedupe by msgId.
+============================================================ */
+class ZeroDayGroup {
+  static generateInvite() {
+    return 'GRP-' + randHex(3).toUpperCase() + '-' + randHex(3).toUpperCase();
+  }
+  static topicFromInvite(invite) { return 'zdmc/group/' + invite.replace(/[^A-Z0-9]/gi,'').toLowerCase(); }
+
+  constructor(roomId, myId, name, avatar) {
+    this.roomId = roomId; this.myId = myId; this.name = name; this.avatar = avatar;
+    this.peers = new Map(); // peerId -> { pc, dc, name, avatar, online }
+    this.pendingHellos = new Map(); // peerId -> { name, avatar }
+    this.topic = ZeroDayGroup.topicFromInvite(roomId);
+    this.onMessage=null; this.onPeerJoin=null; this.onPeerLeave=null; this.onState=null;
+    this.heartbeat=null; this.seenIds = new Set();
+  }
+
+  async start() {
+    await MQTT_RELAY.ensure(this.topic, (raw) => this._onSignal(raw));
+    this._publish({ t:'hello', name:this.name, avatar:this.avatar });
+    this.heartbeat = setInterval(() => this._publish({ t:'hello', name:this.name, avatar:this.avatar }), 12000);
+    this._setState('started');
+  }
+  _publish(msg) { MQTT_RELAY.send(JSON.stringify({ ...msg, from:this.myId })); }
+
+  async _onSignal(raw) {
+    let msg; try { msg = JSON.parse(raw); } catch { return; }
+    if (msg.from === this.myId) return;
+
+    if (msg.t === 'hello') {
+      if (!this.peers.has(msg.from) && !this.pendingHellos.has(msg.from)) {
+        this.pendingHellos.set(msg.from, { name:msg.name, avatar:msg.avatar });
+        if (this.myId < msg.from) this._initiate(msg.from, msg.name, msg.avatar);
+        if (this.onPeerJoin) this.onPeerJoin({ id:msg.from, name:msg.name, avatar:msg.avatar });
+      } else if (this.peers.has(msg.from)) {
+        const p = this.peers.get(msg.from);
+        p.name = msg.name; p.avatar = msg.avatar;
+      }
+    }
+    else if (msg.t === 'offer' && msg.to === this.myId) {
+      await this._handleOffer(msg);
+    }
+    else if (msg.t === 'answer' && msg.to === this.myId) {
+      const p = this.peers.get(msg.from);
+      if (p && p.pc) { try { await p.pc.setRemoteDescription(new RTCSessionDescription(msg.sdp)); } catch {} }
+    }
+    else if (msg.t === 'ice' && msg.to === this.myId) {
+      const p = this.peers.get(msg.from);
+      if (p && p.pc) { try { await p.pc.addIceCandidate({ candidate:msg.c, sdpMid:'', sdpMLineIndex:0 }); } catch {} }
+    }
+    else if (msg.t === 'bye') {
+      const p = this.peers.get(msg.from);
+      if (p) { try { p.pc.close(); } catch {} this.peers.delete(msg.from); }
+      if (this.onPeerLeave) this.onPeerLeave(msg.from);
+    }
+  }
+
+  async _initiate(peerId, name, avatar) {
+    if (this.peers.has(peerId)) return;
+    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    const dc = pc.createDataChannel('g', { ordered:true });
+    const peerObj = { pc, dc, name, avatar, online:false };
+    this.peers.set(peerId, peerObj);
+    this._bindDC(peerId, dc); this._bindPC(peerId, pc);
+    pc.onicecandidate = (e) => { if (e.candidate) this._publish({ t:'ice', to:peerId, c:e.candidate.candidate }); };
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    this._publish({ t:'offer', to:peerId, sdp: pc.localDescription });
+  }
+
+  async _handleOffer(msg) {
+    let name = 'Peer', avatar = '?';
+    if (this.pendingHellos.has(msg.from)) {
+      const info = this.pendingHellos.get(msg.from);
+      name = info.name; avatar = info.avatar;
+      this.pendingHellos.delete(msg.from);
+    } else if (this.peers.has(msg.from)) {
+      const p = this.peers.get(msg.from); name = p.name; avatar = p.avatar;
+    }
+    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    const peerObj = { pc, dc:null, name, avatar, online:false };
+    this.peers.set(msg.from, peerObj);
+    pc.ondatachannel = (e) => { peerObj.dc = e.channel; this._bindDC(msg.from, e.channel); };
+    this._bindPC(msg.from, pc);
+    pc.onicecandidate = (e) => { if (e.candidate) this._publish({ t:'ice', to:msg.from, c:e.candidate.candidate }); };
+    await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+    const ans = await pc.createAnswer();
+    await pc.setLocalDescription(ans);
+    this._publish({ t:'answer', to:msg.from, sdp: ans });
+  }
+
+  _bindPC(peerId, pc) {
+    const p = this.peers.get(peerId);
+    pc.oniceconnectionstatechange = () => {
+      const st = pc.iceConnectionState;
+      if (st === 'connected' || st === 'completed') { p.online = true; this._setState('peer-online', peerId); }
+      if (st === 'failed' || st === 'disconnected' || st === 'closed') { p.online = false; this._setState('peer-offline', peerId); }
+    };
+  }
+  _bindDC(peerId, dc) {
+    const p = this.peers.get(peerId);
+    dc.onopen = () => { p.online = true; this._setState('peer-dc-open', peerId); };
+    dc.onclose = () => { p.online = false; this._setState('peer-dc-closed', peerId); };
+    dc.onmessage = (e) => {
+      let m; try { m = JSON.parse(e.data); } catch { m = { type:'text', body:e.data }; }
+      m.peerId = peerId; m.peerName = p.name; m.peerAvatar = p.avatar;
+      // dedupe broadcast by id
+      if (m.id) { if (this.seenIds.has(m.id)) return; this.seenIds.add(m.id); if (this.seenIds.size > 1000) this.seenIds = new Set([...this.seenIds].slice(-500)); }
+      // re-broadcast to other peers (mesh relay)
+      if (m.type === 'text' || m.type === 'file') {
+        this._relayToOthers(peerId, e.data);
+      }
+      if (this.onMessage) this.onMessage(m);
+    };
+  }
+
+  _relayToOthers(fromPeerId, raw) {
+    this.peers.forEach((p, id) => {
+      if (id !== fromPeerId && p.dc && p.dc.readyState === 'open') {
+        try { p.dc.send(raw); } catch {}
+      }
+    });
+  }
+
+  broadcast(msg) {
+    const raw = JSON.stringify(msg);
+    let sent = 0;
+    this.peers.forEach(p => { if (p.dc && p.dc.readyState === 'open') { try { p.dc.send(raw); sent++; } catch {} } });
+    return sent;
+  }
+  sendTyping(v) { this.broadcast({ type:'typing', value:v, id:uid() }); }
+  sendRead(id) { /* group: broadcast read */ this.broadcast({ type:'read', id }); }
+  _setState(s, peerId) { if (this.onState) this.onState(s, peerId); }
+
+  leave() {
+    clearInterval(this.heartbeat);
+    try { this._publish({ t:'bye' }); } catch {}
+    this.peers.forEach(p => { try { p.pc.close(); } catch {} });
+    this.peers.clear();
+    try { MQTT_RELAY.close(); } catch {}
+  }
+
+  participantCount() { let n = 1; this.peers.forEach(p => { if (p.online) n++; }); return n; }
+}
+
+/* ============================================================
+   ZERO-DAY STRANGER — anonymous match via public topic
+============================================================ */
+class ZeroDayStranger {
+  static topic(interest) { return 'zdmc/match/' + (interest ? interest.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20) : 'global'); }
+
+  constructor(myId, name, avatar, mode, interest) {
+    this.myId = myId; this.name = name; this.avatar = avatar; this.mode = mode; this.interest = interest;
+    this.topic = ZeroDayStranger.topic(interest);
+    this.pc=null; this.dc=null; this.looking=false; this.matchedId=null; this.matchedName=null; this.matchedAvatar=null;
+    this.onState=null; this.onMessage=null; this.heartbeat=null;
+  }
+
+  async start() {
+    this.looking = true;
+    if (this.onState) this.onState('searching');
+    await MQTT_RELAY.ensure(this.topic, (raw) => this._onSignal(raw));
+    this._publish({ t:'looking', name:this.name, avatar:this.avatar, mode:this.mode, interest:this.interest });
+    this.heartbeat = setInterval(() => {
+      if (this.looking) this._publish({ t:'looking', name:this.name, avatar:this.avatar, mode:this.mode, interest:this.interest });
+    }, 4000);
+  }
+  _publish(msg) { MQTT_RELAY.send(JSON.stringify({ ...msg, from:this.myId })); }
+
+  async _onSignal(raw) {
+    let msg; try { msg = JSON.parse(raw); } catch { return; }
+    if (msg.from === this.myId) return;
+
+    if (msg.t === 'looking' && this.looking && !this.matchedId) {
+      // Pair up: lower id initiates
+      this.matchedId = msg.from; this.matchedName = msg.name; this.matchedAvatar = msg.avatar;
+      this.looking = false;
+      if (this.onState) this.onState('connecting', { id:msg.from, name:msg.name, avatar:msg.avatar });
+      const isInitiator = this.myId < msg.from;
+      await this._setupPC(isInitiator, msg.from);
+    }
+    else if (msg.t === 'offer' && msg.to === this.myId) {
+      if (this.pc) { try { this.pc.close(); } catch {} }
+      this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+      this.pc.ondatachannel = (e) => { this.dc = e.channel; this._bindDC(e.channel); };
+      this.pc.onicecandidate = (e) => { if (e.candidate) this._publish({ t:'ice', to:msg.from, c:e.candidate.candidate }); };
+      await this.pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+      const ans = await this.pc.createAnswer();
+      await this.pc.setLocalDescription(ans);
+      this._publish({ t:'answer', to:msg.from, sdp: ans });
+    }
+    else if (msg.t === 'answer' && msg.to === this.myId) {
+      if (this.pc) { try { await this.pc.setRemoteDescription(new RTCSessionDescription(msg.sdp)); } catch {} }
+    }
+    else if (msg.t === 'ice' && msg.to === this.myId) {
+      if (this.pc) { try { await this.pc.addIceCandidate({ candidate:msg.c, sdpMid:'', sdpMLineIndex:0 }); } catch {} }
+    }
+    else if (msg.t === 'next' && msg.from === this.matchedId) {
+      this._handleDisconnect();
+    }
+  }
+
+  async _setupPC(isInitiator, peerId) {
+    this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    if (isInitiator) {
+      this.dc = this.pc.createDataChannel('s', { ordered:true });
+      this._bindDC(this.dc);
+      this.pc.onicecandidate = (e) => { if (e.candidate) this._publish({ t:'ice', to:peerId, c:e.candidate.candidate }); };
+      const offer = await this.pc.createOffer();
+      await this.pc.setLocalDescription(offer);
+      this._publish({ t:'offer', to:peerId, sdp: offer });
+    } else {
+      this.pc.ondatachannel = (e) => { this.dc = e.channel; this._bindDC(e.channel); };
+      this.pc.onicecandidate = (e) => { if (e.candidate) this._publish({ t:'ice', to:peerId, c:e.candidate.candidate }); };
+    }
+  }
+
+  _bindDC(dc) {
+    dc.onopen = () => { if (this.onState) this.onState('connected', { id:this.matchedId, name:this.matchedName, avatar:this.matchedAvatar }); };
+    dc.onclose = () => this._handleDisconnect();
+    dc.onmessage = (e) => {
+      let m; try { m = JSON.parse(e.data); } catch { m = { type:'text', body:e.data }; }
+      if (m.type === 'typing' || m.type === 'read' || m.type === 'presence') return;
+      if (m.type === 'call-offer' || m.type === 'call-answer' || m.type === 'call-signal' || m.type === 'call-end' || m.type === 'call-reject') {
+        if (this.onCallSignal) return this.onCallSignal(m);
+      }
+      if (this.onMessage) this.onMessage(m);
+    };
+  }
+  send(msg) {
+    if (this.dc && this.dc.readyState === 'open') { try { this.dc.send(JSON.stringify(msg)); return true; } catch {} }
+    return false;
+  }
+  sendTyping(v) { this.send({ type:'typing', value:v }); }
+  sendRead(id) { this.send({ type:'read', id }); }
+
+  next() {
+    if (this.dc) try { this.dc.send(JSON.stringify({ type:'stranger-next' })); } catch {}
+    if (this._publish) try { this._publish({ t:'next' }); } catch {}
+    this._cleanupPeer();
+    this.start();
+  }
+  stop() {
+    this._cleanupPeer();
+    clearInterval(this.heartbeat);
+    this.looking = false;
+    try { MQTT_RELAY.close(); } catch {}
+    if (this.onState) this.onState('stopped');
+  }
+  _handleDisconnect() {
+    this._cleanupPeer();
+    if (this.onState) this.onState('disconnected');
+  }
+  _cleanupPeer() {
+    try { this.dc && this.dc.close(); } catch {}
+    try { this.pc && this.pc.close(); } catch {}
+    this.dc=null; this.pc=null; this.matchedId=null; this.matchedName=null; this.matchedAvatar=null;
+  }
+}
+
+/* ============================================================
+   ZERO-DAY CALL — voice/video over WebRTC, signaling via chat DC
+============================================================ */
+class ZeroDayCall {
+  constructor() {
+    this.pc=null; this.localStream=null; this.remoteStream=null;
+    this.video=true; this.audio=true; this.role=null; this.active=false;
+    this.onState=null; this.onRemoteStream=null;
+    this.chatSend=null; // (msg)=>bool  — sends via active chat
+    this.chatPeer=null;
+  }
+
+  async startCall(chatPeer, video=true) {
+    this.video = video; this.role = 'caller';
+    this.chatPeer = chatPeer;
+    this.localStream = await navigator.mediaDevices.getUserMedia({ audio:true, video });
+    if (this.onState) this.onState('ringing');
+    this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    this.localStream.getTracks().forEach(t => this.pc.addTrack(t, this.localStream));
+    this.pc.ontrack = (e) => { this.remoteStream = e.streams[0]; if (this.onRemoteStream) this.onRemoteStream(this.remoteStream); };
+    this.pc.onicecandidate = (e) => { if (e.candidate) this.chatPeer.send({ type:'call-signal', sub:'ice', c:e.candidate.candidate }); };
+    chatPeer.onCallSignal = async (msg) => this._handleSignal(msg);
+    const offer = await this.pc.createOffer();
+    await this.pc.setLocalDescription(offer);
+    chatPeer.send({ type:'call-offer', sdp: offer, video });
+    this.active = true;
+  }
+
+  async acceptCall(chatPeer, offer, video) {
+    this.video = video; this.role = 'callee';
+    this.chatPeer = chatPeer;
+    this.localStream = await navigator.mediaDevices.getUserMedia({ audio:true, video });
+    this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    this.localStream.getTracks().forEach(t => this.pc.addTrack(t, this.localStream));
+    this.pc.ontrack = (e) => { this.remoteStream = e.streams[0]; if (this.onRemoteStream) this.onRemoteStream(this.remoteStream); };
+    this.pc.onicecandidate = (e) => { if (e.candidate) this.chatPeer.send({ type:'call-signal', sub:'ice', c:e.candidate.candidate }); };
+    chatPeer.onCallSignal = async (msg) => this._handleSignal(msg);
+    await this.pc.setRemoteDescription(new RTCSessionDescription(offer));
+    const ans = await this.pc.createAnswer();
+    await this.pc.setLocalDescription(ans);
+    chatPeer.send({ type:'call-answer', sdp: ans });
+    this.active = true;
+    if (this.onState) this.onState('connected');
+  }
+
+  async _handleSignal(msg) {
+    if (msg.sub === 'ice' && this.pc) {
+      try { await this.pc.addIceCandidate({ candidate:msg.c, sdpMid:'', sdpMLineIndex:0 }); } catch {}
+    }
+  }
+  async handleAnswer(sdp) {
+    if (this.pc) { try { await this.pc.setRemoteDescription(new RTCSessionDescription(sdp)); } catch {} if (this.onState) this.onState('connected'); }
+  }
+  toggleAudio() { if (this.localStream) { this.localStream.getAudioTracks().forEach(t => t.enabled = !t.enabled); return this.localStream.getAudioTracks()[0]?.enabled ?? false; } return false; }
+  toggleVideo() { if (this.localStream) { this.localStream.getVideoTracks().forEach(t => t.enabled = !t.enabled); return this.localStream.getVideoTracks()[0]?.enabled ?? false; } return false; }
+  end() {
+    try { this.localStream && this.localStream.getTracks().forEach(t => t.stop()); } catch {}
+    try { this.pc && this.pc.close(); } catch {}
+    this.localStream=null; this.remoteStream=null; this.pc=null; this.active=false;
+    if (this.onState) this.onState('ended');
   }
 }
 
@@ -1221,33 +1151,35 @@ class ZeroDayPeer {
    APP STATE
 ============================================================ */
 const state = {
-  peer: null,
+  mode: null,         // 'private' | 'group' | 'stranger'
+  peer: null,         // ZeroDayPeer (private)
+  group: null,        // ZeroDayGroup
+  stranger: null,     // ZeroDayStranger
+  call: null,         // ZeroDayCall
   invite: null,
-  role: null,        // 'host' | 'guest'
-  peerName: 'Peer',
-  peerAvatar: '?',
-  peerOnline: false,
+  role: null,
+  peerName: 'Peer', peerAvatar: '?', peerOnline: false,
+  groupParticipants: new Map(), // id -> { name, avatar, online }
   chatLog: [],
-  myTypingTimer: null,
-  peerTypingTimer: null,
-  unreadSince: null
+  myTypingTimer: null, peerTypingTimer: null,
+  myId: uid(),
+  pendingCallOffer: null,
+  callPeerName: ''
 };
 
 /* ============================================================
-   UI WIRE-UP
+   UI HELPERS
 ============================================================ */
 function applySettings() {
   document.documentElement.setAttribute('data-theme', settings.theme);
   document.documentElement.style.setProperty('--scale', settings.scale);
   $('#setAv').textContent = settings.avatar;
   $('#setName').textContent = settings.name;
-  $('#setId').textContent = 'id: ' + (loadSession()?.myId || '—');
+  $('#setId').textContent = 'id: ' + state.myId.slice(0,8);
   $('#setNameInput').value = settings.name;
   $$('.theme-swatch').forEach(s => s.classList.toggle('active', s.dataset.theme === settings.theme));
   $$('.scale-row button').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.scale) === settings.scale));
-  // toggles
   $$('[data-toggle]').forEach(t => t.classList.toggle('on', settings[t.dataset.toggle]));
-  // connection pill reflects default
   setConnPill(false, 'Idle');
 }
 
@@ -1255,87 +1187,64 @@ function autoScale() {
   if (!settings.autoScale) return;
   const w = window.innerWidth, h = window.innerHeight, dpr = window.devicePixelRatio || 1;
   let s = 1;
-  if (w < 380) s = 0.85;
-  else if (w < 600) s = 0.95;
-  else if (w < 900) s = 1;
-  else if (w < 1400) s = 1.05;
-  else s = 1.15;
-  // very tall device? scale up slightly
+  if (w < 380) s = 0.85; else if (w < 600) s = 0.95; else if (w < 900) s = 1; else if (w < 1400) s = 1.05; else s = 1.15;
   if (h > 1000 && w > 800) s = Math.max(s, 1.1);
-  // very high DPI mobile — reduce a touch
   if (dpr >= 3 && w < 500) s = Math.min(s, 0.9);
   $('#autoScaleDetected').textContent = `${w}×${h} @${dpr}x → scale ${s}`;
-  if (settings.scale !== s && !settings.manualScale) {
-    settings.scale = s;
-    document.documentElement.style.setProperty('--scale', s);
-  }
+  if (!settings.manualScale) { settings.scale = s; document.documentElement.style.setProperty('--scale', s); }
 }
 
-function setConnPill(online, label) {
+function setConnPill(online, label, searching=false) {
   const pill = $('#connPill');
-  pill.classList.toggle('online', online);
+  pill.classList.remove('online','searching');
+  if (searching) pill.classList.add('searching');
+  else if (online) pill.classList.add('online');
   $('#connLabel').textContent = label;
 }
 
-/* ---------- view switching ---------- */
 function showView(name) {
   $$('.view').forEach(v => v.classList.remove('active'));
   if (name === 'home') $('#homeView').classList.add('active');
   if (name === 'chat') $('#chatView').classList.add('active');
 }
 
-/* ---------- modals ---------- */
 function openModal(id) { $('#'+id).classList.add('active'); }
 function closeModal(id) { $('#'+id).classList.remove('active'); }
 $$('[data-close]').forEach(b => b.onclick = () => b.closest('.modal-overlay').classList.remove('active'));
 
 /* ---------- chat rendering ---------- */
 function renderMessages() {
-  const host = $('#messages');
-  host.innerHTML = '';
-  const log = state.chatLog;
-  log.forEach(m => host.appendChild(buildMsgEl(m)));
+  const host = $('#messages'); host.innerHTML = '';
+  state.chatLog.forEach(m => host.appendChild(buildMsgEl(m)));
   host.scrollTop = host.scrollHeight;
 }
-
 function buildMsgEl(m) {
   const el = document.createElement('div');
-  if (m.sys) {
-    el.className = 'msg sys';
-    el.textContent = m.body;
-    return el;
-  }
-  el.className = 'msg ' + (m.me ? 'me' : 'them');
+  if (m.sys) { el.className = 'msg sys'; el.textContent = m.body; return el; }
+  const me = m.me;
+  el.className = 'msg ' + (me ? 'me' : 'them');
   if (m.kind === 'file') {
     el.classList.add('file');
-    const size = fmtSize(m.size || 0);
     el.innerHTML = `
       <div class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/></svg></div>
-      <div class="finf"><div class="fname">${esc(m.name||'file')}</div><div class="fsize">${size}</div></div>
-      <a class="dl" href="${m.dataUrl||'#'}" download="${esc(m.name||'file')}">Save</a>
-    `;
+      <div class="finf"><div class="fname">${esc(m.name||'file')}</div><div class="fsize">${fmtSize(m.size||0)}</div></div>
+      <a class="dl" href="${m.dataUrl||'#'}" download="${esc(m.name||'file')}">Save</a>`;
     return el;
   }
+  const authorTag = (state.mode === 'group' && !me && m.author) ? `<span class="author">${esc(m.author)}</span>·` : '';
   el.innerHTML = `<div class="body">${esc(m.body||'')}</div>
-    <div class="meta"><span>${fmtTime(m.ts||now())}</span>${m.me ? `<span class="tick">${m.read?'✓✓':'✓'}</span>`:''}</div>`;
+    <div class="meta">${authorTag}<span>${fmtTime(m.ts||now())}</span>${me ? `<span class="tick">${m.read?'✓✓':'✓'}</span>`:''}</div>`;
   return el;
 }
-
 function pushMessage(m) {
-  state.chatLog.push(m);
-  saveChatLog(state.chatLog);
-  const host = $('#messages');
-  host.appendChild(buildMsgEl(m));
-  host.scrollTop = host.scrollHeight;
-  // sound
+  state.chatLog.push(m); saveChatLog(state.chatLog);
+  const host = $('#messages'); host.appendChild(buildMsgEl(m)); host.scrollTop = host.scrollHeight;
   if (settings.sound && !m.me && !m.sys) playBeep();
 }
-
 function playBeep() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
     o.connect(g); g.connect(ctx.destination);
     o.frequency.value = 660; o.type = 'sine';
     g.gain.setValueAtTime(0.0001, ctx.currentTime);
@@ -1345,62 +1254,72 @@ function playBeep() {
   } catch {}
 }
 
-/* ---------- peer event handlers ---------- */
-function bindPeerEvents(p) {
+function updateChatHeader(name, avatar, status, online=false, searching=false) {
+  $('#peerName').textContent = name;
+  $('#peerAv').textContent = avatar;
+  $('#peerStatus').textContent = status;
+  $('#peerAv').classList.toggle('online', online);
+  $('#peerAv').classList.toggle('searching', searching);
+}
+
+function showHeaderButtons() {
+  // show context-appropriate header buttons
+  $('#voiceCallBtn').style.display = (state.mode === 'private' || state.mode === 'stranger') ? 'grid' : 'none';
+  $('#videoCallBtn').style.display = (state.mode === 'private' || state.mode === 'stranger') ? 'grid' : 'none';
+  $('#nextStrangerBtn').style.display = state.mode === 'stranger' ? 'grid' : 'none';
+  $('#participantsBtn').style.display = state.mode === 'group' ? 'grid' : 'none';
+}
+
+/* ============================================================
+   BIND CHAT-LEVEL EVENTS FOR EACH MODE
+============================================================ */
+function bindPrivatePeerEvents(p) {
   p.onState = (s) => {
-    console.log('[peer state]', s);
-    let label = 'Idle';
-    let online = false;
-    if (s.startsWith('signaling:')) { label = 'Signaling…'; }
-    else if (s.startsWith('ice:connected') || s.startsWith('ice:completed')) { label = 'P2P Connected'; online = true; }
-    else if (s.startsWith('ice:checking')) { label = 'Connecting…'; }
-    else if (s.startsWith('ice:disconnected')) { label = 'Reconnecting…'; }
-    else if (s.startsWith('ice:failed')) { label = 'Connection failed'; }
-    else if (s === 'open') { label = 'P2P Open'; online = true; }
-    else if (s === 'closed') { label = 'Closed'; online = false; }
+    let label='Idle', online=false;
+    if (s.startsWith('signaling:')) label='Signaling…';
+    else if (s.startsWith('ice:connected')||s.startsWith('ice:completed')){label='P2P Connected';online=true;}
+    else if (s.startsWith('ice:checking')) label='Connecting…';
+    else if (s.startsWith('ice:disconnected')) label='Reconnecting…';
+    else if (s.startsWith('ice:failed')) label='Connection failed';
+    else if (s==='open'){label='P2P Open';online=true;}
+    else if (s==='closed') label='Closed';
     setConnPill(online, label);
-    $('#peerStatus').textContent = label;
+    updateChatHeader(state.peerName, state.peerAvatar, label, online);
   };
   p.onOpen = () => {
-    $('#peerStatus').textContent = 'Connected · end-to-end encrypted';
+    updateChatHeader(state.peerName, state.peerAvatar, 'Connected · E2E encrypted', true);
     $('#sendBtn').disabled = false;
-    $('#peerAv').classList.add('online');
     pushMessage({ sys:true, body:'🔒 End-to-end encrypted P2P channel established.', ts: now() });
-    // exchange hello
     p.send({ type:'hello', name: settings.name, avatar: settings.avatar });
     p.sendPresence(true);
-    // mark chat session
-    const sess = loadSession();
-    if (sess) { sess.active = true; saveSession(sess); }
+    const sess = loadSession(); if (sess) { sess.active=true; saveSession(sess); }
   };
   p.onClose = () => {
-    $('#peerStatus').textContent = 'Disconnected';
+    updateChatHeader(state.peerName, state.peerAvatar, 'Disconnected', false);
     $('#sendBtn').disabled = true;
-    $('#peerAv').classList.remove('online');
-    pushMessage({ sys:true, body:'⚠️ Peer disconnected. You can return home and start a new session.', ts: now() });
+    pushMessage({ sys:true, body:'⚠️ Peer disconnected.', ts: now() });
   };
   p.onPresence = (online) => {
     state.peerOnline = online;
-    $('#peerAv').classList.toggle('online', online);
-    if (online) $('#peerStatus').textContent = 'Online · E2E encrypted';
-    else $('#peerStatus').textContent = 'Peer offline';
+    updateChatHeader(state.peerName, state.peerAvatar, online?'Online · E2E encrypted':'Peer offline', online);
   };
   p.onMessage = (msg) => {
     if (msg.type === 'hello') {
       state.peerName = msg.name || 'Peer';
       state.peerAvatar = (msg.avatar || '?').toUpperCase();
-      $('#peerName').textContent = state.peerName;
-      $('#peerAv').textContent = state.peerAvatar;
+      updateChatHeader(state.peerName, state.peerAvatar, 'Online · E2E encrypted', state.peerOnline);
       return;
     }
     if (msg.type === 'text') {
-      pushMessage({ me:false, body: msg.body, ts: msg.ts || now() });
-      // send read receipt
+      pushMessage({ me:false, body:msg.body, ts:msg.ts||now(), id:msg.id });
       if (settings.receipts) p.sendRead(msg.id || String(msg.ts));
       return;
     }
-    if (msg.type === 'file') {
-      pushMessage({ me:false, kind:'file', name: msg.name, size: msg.size, dataUrl: msg.dataUrl, ts: msg.ts || now() });
+    if (msg.type === 'file') { pushMessage({ me:false, kind:'file', name:msg.name, size:msg.size, dataUrl:msg.dataUrl, ts:msg.ts||now() }); return; }
+    if (msg.type === 'clear-req') {
+      state.chatLog = []; saveChatLog([]);
+      renderMessages();
+      pushMessage({ sys:true, body:'🗑️ Peer cleared the conversation on their side.', ts: now() });
       return;
     }
   };
@@ -1409,261 +1328,554 @@ function bindPeerEvents(p) {
     let bub = $('#typingBubble');
     if (v) {
       if (!bub) {
-        bub = document.createElement('div');
-        bub.id = 'typingBubble';
-        bub.className = 'typing-bubble';
-        bub.innerHTML = '<span class="d"></span><span class="d"></span><span class="d"></span>';
-        $('#messages').appendChild(bub);
-        $('#messages').scrollTop = $('#messages').scrollHeight;
+        bub = document.createElement('div'); bub.id='typingBubble'; bub.className='typing-bubble';
+        bub.innerHTML='<span class="d"></span><span class="d"></span><span class="d"></span>';
+        $('#messages').appendChild(bub); $('#messages').scrollTop = $('#messages').scrollHeight;
       }
       clearTimeout(state.peerTypingTimer);
-      state.peerTypingTimer = setTimeout(() => bub.remove(), 3000);
-    } else {
-      bub && bub.remove();
-    }
+      state.peerTypingTimer = setTimeout(()=>bub.remove(), 3000);
+    } else bub && bub.remove();
   };
   p.onRead = (id) => {
-    // mark matching message as read
     state.chatLog.forEach(m => { if (m.id === id || String(m.ts) === String(id)) m.read = true; });
-    saveChatLog(state.chatLog);
-    renderMessages();
+    saveChatLog(state.chatLog); renderMessages();
   };
+  // CALL signaling
+  p.onCallSignal = (msg) => handleIncomingCallSignal(msg, p);
+}
+
+function bindGroupEvents(g) {
+  g.onState = (s, peerId) => {
+    const connected = [...g.peers.values()].filter(p=>p.online).length;
+    setConnPill(connected > 0, connected > 0 ? `${connected+1} in room` : 'Alone in room');
+    updateChatHeader(g.roomId, '👥', connected > 0 ? `${connected+1} participants · E2E mesh` : 'Waiting for others…', connected > 0);
+    renderParticipants();
+  };
+  g.onPeerJoin = ({ id, name, avatar }) => {
+    state.groupParticipants.set(id, { name, avatar, online:false });
+    pushMessage({ sys:true, body:`👤 ${esc(name)} joined the room.`, ts: now() });
+    renderParticipants();
+  };
+  g.onPeerLeave = (id) => {
+    const p = state.groupParticipants.get(id);
+    if (p) pushMessage({ sys:true, body:`👋 ${esc(p.name)} left the room.`, ts: now() });
+    state.groupParticipants.delete(id);
+    renderParticipants();
+  };
+  g.onMessage = (m) => {
+    if (m.type === 'hello') {
+      state.groupParticipants.set(m.peerId, { name:m.peerName, avatar:m.peerAvatar, online:true });
+      renderParticipants();
+      return;
+    }
+    if (m.type === 'text') {
+      pushMessage({ me:false, body:m.body, ts:m.ts||now(), id:m.id, author:m.peerName });
+      return;
+    }
+    if (m.type === 'file') {
+      pushMessage({ me:false, kind:'file', name:m.name, size:m.size, dataUrl:m.dataUrl, ts:m.ts||now(), author:m.peerName });
+      return;
+    }
+  };
+  g.onPeerJoin && g.onPeerJoin; // noop
+}
+
+function bindStrangerEvents(s) {
+  s.onState = (st, info) => {
+    if (st === 'searching') {
+      $('#strangerSearching').style.display = 'flex';
+      setConnPill(false, 'Searching…', true);
+      updateChatHeader('Stranger', '?', 'Searching for someone…', false, true);
+      $('#sendBtn').disabled = true;
+    } else if (st === 'connecting') {
+      $('#strangerSearching').style.display = 'flex';
+      $('#strangerSearching h3').textContent = 'Connecting…';
+      setConnPill(false, 'Connecting…', true);
+      updateChatHeader(info.name||'Stranger', info.avatar||'?', 'Connecting…', false, true);
+    } else if (st === 'connected') {
+      $('#strangerSearching').style.display = 'none';
+      state.peerName = info.name || 'Stranger';
+      state.peerAvatar = (info.avatar || '?').toUpperCase();
+      updateChatHeader(state.peerName, state.peerAvatar, 'Stranger · E2E encrypted', true);
+      setConnPill(true, 'Connected');
+      $('#sendBtn').disabled = false;
+      pushMessage({ sys:true, body:'🎲 Connected to a stranger. Say hi! (Click → to find another.)', ts: now() });
+      s.send({ type:'hello', name: settings.name, avatar: settings.avatar });
+    } else if (st === 'disconnected') {
+      $('#strangerSearching').style.display = 'flex';
+      $('#strangerSearching h3').textContent = 'Stranger disconnected';
+      $('#strangerSearching p').textContent = 'Click below to find another stranger.';
+      $('#sendBtn').disabled = true;
+      setConnPill(false, 'Disconnected');
+      pushMessage({ sys:true, body:'👋 Stranger disconnected.', ts: now() });
+    } else if (st === 'stopped') {
+      $('#strangerSearching').style.display = 'none';
+      setConnPill(false, 'Idle');
+    }
+  };
+  s.onMessage = (msg) => {
+    if (msg.type === 'hello') {
+      state.peerName = msg.name || 'Stranger';
+      state.peerAvatar = (msg.avatar || '?').toUpperCase();
+      updateChatHeader(state.peerName, state.peerAvatar, 'Stranger · E2E encrypted', true);
+      return;
+    }
+    if (msg.type === 'text') {
+      pushMessage({ me:false, body:msg.body, ts:msg.ts||now(), id:msg.id });
+      if (settings.receipts) s.sendRead(msg.id || String(msg.ts));
+      return;
+    }
+    if (msg.type === 'file') { pushMessage({ me:false, kind:'file', name:msg.name, size:msg.size, dataUrl:msg.dataUrl, ts:msg.ts||now() }); return; }
+  };
+  s.onCallSignal = (msg) => handleIncomingCallSignal(msg, s);
+}
+
+function renderParticipants() {
+  const host = $('#participantsList');
+  host.innerHTML = '';
+  // me first
+  host.appendChild(participantItem(state.myId, settings.name, settings.avatar, true, true));
+  state.groupParticipants.forEach((p, id) => {
+    host.appendChild(participantItem(id, p.name, p.avatar, p.online, false));
+  });
+}
+function participantItem(id, name, avatar, online, isMe) {
+  const el = document.createElement('div');
+  el.className = 'participant-item';
+  el.innerHTML = `<div class="av ${online?'online':''}">${esc(avatar||'?')}</div>
+    <div class="inf"><div class="nm">${esc(name||'Anonymous')}${isMe?'<span class="you">(you)</span>':''}</div>
+    <div class="st">${online?'Online':'Joining…'}${isMe?' · host':''}</div></div>`;
+  return el;
 }
 
 /* ============================================================
-   FLOW: Create / Join / Restore
+   CALL HANDLING
 ============================================================ */
+function handleIncomingCallSignal(msg, chatPeer) {
+  if (msg.type === 'call-offer') {
+    // show incoming call modal
+    state.pendingCallOffer = { offer: msg.sdp, video: msg.video, chatPeer };
+    $('#callerName').textContent = state.peerName + ' is calling';
+    $('#callerType').textContent = msg.video ? 'Video call' : 'Voice call';
+    $('#callerAvatar').textContent = state.peerAvatar;
+    openModal('incomingCallModal');
+  } else if (msg.type === 'call-answer') {
+    if (state.call) state.call.handleAnswer(msg.sdp);
+  } else if (msg.type === 'call-signal') {
+    if (state.call) state.call._handleSignal(msg);
+  } else if (msg.type === 'call-end') {
+    if (state.call) {
+      state.call.end();
+      $('#callOverlay').classList.remove('active');
+      pushMessage({ sys:true, body:'📞 Call ended.', ts: now() });
+      state.call = null;
+    }
+  } else if (msg.type === 'call-reject') {
+    if (state.call) {
+      state.call.end();
+      $('#callOverlay').classList.remove('active');
+      pushMessage({ sys:true, body:'📵 Call rejected.', ts: now() });
+      state.call = null;
+    }
+  }
+}
 
-$('#createBtn').onclick = () => {
-  $('#createName').value = settings.name === 'Anonymous' ? '' : settings.name;
-  $('#createAvatar').value = settings.avatar;
-  openModal('createModal');
-};
+async function startOutgoingCall(video) {
+  if (state.mode !== 'private' && state.mode !== 'stranger') return;
+  const chatPeer = state.peer || state.stranger;
+  if (!chatPeer || !chatPeer.open && !(chatPeer.dc && chatPeer.dc.readyState === 'open')) {
+    toast('Connect to peer first', 'warn'); return;
+  }
+  if (state.call) { toast('Call already active', 'warn'); return; }
+  state.call = new ZeroDayCall();
+  state.call.onState = (s) => {
+    $('#callState').textContent = s === 'ringing' ? 'Calling…' : s === 'connected' ? 'Connected' : s === 'ended' ? 'Ended' : s;
+  };
+  state.call.onRemoteStream = (stream) => {
+    $('#remoteVideo').srcObject = stream;
+  };
+  try {
+    await state.call.startCall(chatPeer, video);
+    $('#callName').textContent = state.peerName;
+    $('#localVideo').srcObject = state.call.localStream;
+    $('#muteVideoBtn').style.display = video ? 'grid' : 'none';
+    $('#callOverlay').classList.add('active');
+    pushMessage({ sys:true, body:`📞 ${video?'Video':'Voice'} call started.`, ts: now() });
+  } catch (e) {
+    toast('Call failed: ' + e.message, 'err');
+    state.call = null;
+  }
+}
 
+async function acceptIncomingCall() {
+  if (!state.pendingCallOffer) return;
+  closeModal('incomingCallModal');
+  const { offer, video, chatPeer } = state.pendingCallOffer;
+  state.call = new ZeroDayCall();
+  state.call.onState = (s) => {
+    $('#callState').textContent = s === 'connected' ? 'Connected' : s === 'ended' ? 'Ended' : s;
+  };
+  state.call.onRemoteStream = (stream) => { $('#remoteVideo').srcObject = stream; };
+  try {
+    await state.call.acceptCall(chatPeer, offer, video);
+    $('#callName').textContent = state.peerName;
+    $('#localVideo').srcObject = state.call.localStream;
+    $('#muteVideoBtn').style.display = video ? 'grid' : 'none';
+    $('#callOverlay').classList.add('active');
+    pushMessage({ sys:true, body:`📞 Call accepted.`, ts: now() });
+  } catch (e) {
+    toast('Accept failed: ' + e.message, 'err');
+    state.call = null;
+  }
+  state.pendingCallOffer = null;
+}
+function rejectIncomingCall() {
+  closeModal('incomingCallModal');
+  const chatPeer = state.peer || state.stranger;
+  if (chatPeer) chatPeer.send({ type:'call-reject' });
+  state.pendingCallOffer = null;
+}
+function hangupCall() {
+  if (!state.call) return;
+  const chatPeer = state.peer || state.stranger;
+  if (chatPeer) chatPeer.send({ type:'call-end' });
+  state.call.end();
+  $('#callOverlay').classList.remove('active');
+  pushMessage({ sys:true, body:'📞 Call ended.', ts: now() });
+  state.call = null;
+}
+
+/* ============================================================
+   FLOWS: home actions
+============================================================ */
+$$('[data-action]').forEach(b => b.onclick = () => {
+  const a = b.dataset.action;
+  if (a === 'create-private') {
+    $('#createName').value = settings.name === 'Anonymous' ? '' : settings.name;
+    $('#createAvatar').value = settings.avatar;
+    openModal('createModal');
+  } else if (a === 'create-group') {
+    $('#groupName').value = settings.name === 'Anonymous' ? '' : settings.name;
+    $('#groupAvatar').value = settings.avatar;
+    openModal('createGroupModal');
+  } else if (a === 'match-stranger') {
+    $('#strangerName').value = settings.name === 'Anonymous' ? '' : settings.name;
+    $('#strangerAvatar').value = settings.avatar;
+    openModal('strangerModal');
+  } else if (a === 'join') {
+    $('#joinName').value = settings.name === 'Anonymous' ? '' : settings.name;
+    $('#joinAvatar').value = settings.avatar;
+    const h = location.hash.match(/join=([A-Z0-9-]+)/i);
+    if (h) $('#joinCode').value = h[1];
+    openModal('joinModal');
+  } else if (a === 'restore') {
+    const sess = loadSession();
+    if (!sess) { toast('No previous session found', 'warn'); return; }
+    state.chatLog = loadChatLog();
+    $('#joinCode').value = sess.invite;
+    $('#joinName').value = sess.name || settings.name;
+    $('#joinAvatar').value = sess.avatar || settings.avatar;
+    openModal('joinModal');
+  } else if (a === 'clear-all') {
+    if (!confirm('Wipe ALL local data (history, sessions, identity)?')) return;
+    localStorage.clear();
+    location.reload();
+  }
+});
+
+/* ----- match preference cards ----- */
+$$('.match-pref-card').forEach(c => c.onclick = () => {
+  $$('.match-pref-card').forEach(x => x.classList.remove('selected'));
+  c.classList.add('selected');
+});
+
+/* ----- CREATE PRIVATE ----- */
 $('#createConfirm').onclick = async () => {
   const name = $('#createName').value.trim() || 'Anonymous';
   const av = ($('#createAvatar').value.trim() || name[0] || 'A').toUpperCase();
-  const room = $('#createRoom').value.trim();
-  settings.name = name; settings.avatar = av; saveSettings();
-  applySettings();
-
+  settings.name = name; settings.avatar = av; saveSettings(); applySettings();
   closeModal('createModal');
-
-  // generate invite
   const invite = ZeroDayPeer.generateInvite();
-  state.invite = invite;
-  state.role = 'host';
-
-  // show invite modal immediately
+  state.invite = invite; state.role = 'host'; state.mode = 'private';
+  state.chatLog = []; saveChatLog([]);
   $('#inviteCode').textContent = invite;
   const link = `${location.origin}${location.pathname}#join=${encodeURIComponent(invite)}`;
   $('#inviteLink').textContent = link;
   openModal('inviteModal');
-
-  // generate QR
   try {
-    if (typeof QRCode !== 'undefined') {
-      $('#qr-host').innerHTML = '';
-      QRCode.toCanvas(link, { width: 180, margin:1, color:{ dark:'#000', light:'#fff' } }, (err,c) => {
-        if (!err) $('#qr-host').appendChild(c);
-      });
-    } else {
-      // load QRCode lib dynamically
-      await loadScript('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js');
-      $('#qr-host').innerHTML = '';
-      QRCode.toCanvas(link, { width: 180, margin:1, color:{ dark:'#000', light:'#fff' } }, (err,c) => {
-        if (!err) $('#qr-host').appendChild(c);
-      });
-    }
-  } catch(e) { console.warn('QR fail', e); }
-
-  // save session
-  saveSession({ invite, role:'host', myId: uid(), name, avatar: av, room, created: now(), active:false });
-
-  // start peer
+    if (typeof QRCode === 'undefined') await loadScript('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js');
+    $('#qr-host').innerHTML = '';
+    QRCode.toCanvas(link, { width:180, margin:1, color:{dark:'#000',light:'#fff'} }, (err,c) => { if(!err) $('#qr-host').appendChild(c); });
+  } catch {}
+  saveSession({ invite, role:'host', mode:'private', myId: state.myId, name, avatar: av, created: now(), active:false });
   state.peer = new ZeroDayPeer();
-  bindPeerEvents(state.peer);
-  showView('chat');
-  $('#peerName').textContent = 'Waiting for peer…';
-  $('#peerStatus').textContent = 'Signaling…';
+  bindPrivatePeerEvents(state.peer);
+  showView('chat'); showHeaderButtons();
+  state.peerName = 'Waiting for peer…'; state.peerAvatar = '?';
+  updateChatHeader('Waiting…', '?', 'Signaling…', false);
   pushMessage({ sys:true, body:`🔗 Invite code: ${invite} — share it with anyone, on any device.`, ts: now() });
-  if (room) pushMessage({ sys:true, body:`Room: ${esc(room)}`, ts: now() });
-
   try {
-    await state.peer.host(invite, (method) => {
-      toast('Signaling via ' + method.toUpperCase(), 'ok');
-      if (method === 'manual') {
-        pushMessage({ sys:true, body:'⚠️ Auto-signaling failed. Use manual mode: copy your offer & share with peer.', ts: now() });
-      }
-    });
-  } catch(e) {
+    await state.peer.host(invite, (m) => toast('Signaling via ' + m.toUpperCase(), 'ok'));
+  } catch (e) {
     toast('Signaling error: ' + e.message, 'err');
-    pushMessage({ sys:true, body:'❌ Signaling failed. Try again or use Join with a fresh code.', ts: now() });
+    pushMessage({ sys:true, body:'❌ Signaling failed. Try again.', ts: now() });
   }
 };
 
-$('#copyInviteBtn').onclick = () => {
-  navigator.clipboard.writeText(state.invite).then(() => toast('Invite code copied', 'ok'));
-};
-$('#shareInviteBtn').onclick = async () => {
-  const link = `${location.origin}${location.pathname}#join=${encodeURIComponent(state.invite)}`;
-  if (navigator.share) {
-    try { await navigator.share({ title:'ZeroDay Meet Chat', text:`Join my chat: ${state.invite}`, url: link }); }
-    catch {}
-  } else {
-    navigator.clipboard.writeText(link).then(() => toast('Share link copied', 'ok'));
+/* ----- CREATE GROUP ----- */
+$('#groupConfirm').onclick = async () => {
+  const name = $('#groupName').value.trim() || 'Anonymous';
+  const av = ($('#groupAvatar').value.trim() || name[0] || 'A').toUpperCase();
+  const roomName = $('#groupRoomName').value.trim() || 'Group Chat';
+  settings.name = name; settings.avatar = av; saveSettings(); applySettings();
+  closeModal('createGroupModal');
+  const invite = ZeroDayGroup.generateInvite();
+  state.invite = invite; state.role = 'host'; state.mode = 'group';
+  state.chatLog = []; saveChatLog([]);
+  state.groupParticipants = new Map();
+  state.groupParticipants.set(state.myId, { name, avatar: av, online: true });
+  $('#inviteCode').textContent = invite;
+  const link = `${location.origin}${location.pathname}#join=${encodeURIComponent(invite)}`;
+  $('#inviteLink').textContent = link;
+  openModal('inviteModal');
+  try {
+    if (typeof QRCode === 'undefined') await loadScript('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js');
+    $('#qr-host').innerHTML = '';
+    QRCode.toCanvas(link, { width:180, margin:1, color:{dark:'#000',light:'#fff'} }, (err,c) => { if(!err) $('#qr-host').appendChild(c); });
+  } catch {}
+  saveSession({ invite, role:'host', mode:'group', myId: state.myId, name, avatar: av, room: roomName, created: now(), active:false });
+  state.group = new ZeroDayGroup(invite, state.myId, name, av);
+  bindGroupEvents(state.group);
+  showView('chat'); showHeaderButtons();
+  updateChatHeader(roomName, '👥', 'Creating mesh…', false);
+  pushMessage({ sys:true, body:`👥 Group room created. Code: ${invite}`, ts: now() });
+  pushMessage({ sys:true, body:`Share this code with up to many people. They join via "Enter Invite Code".`, ts: now() });
+  try {
+    await state.group.start();
+  } catch (e) {
+    toast('Group start failed: ' + e.message, 'err');
   }
 };
 
-$('#joinBtn').onclick = () => {
-  $('#joinName').value = settings.name === 'Anonymous' ? '' : settings.name;
-  $('#joinAvatar').value = settings.avatar;
-  // pre-fill from URL hash if present
-  const h = location.hash.match(/join=([A-Z0-9-]+)/i);
-  if (h) $('#joinCode').value = h[1];
-  openModal('joinModal');
+/* ----- STRANGER MATCH ----- */
+$('#strangerConfirm').onclick = async () => {
+  const name = $('#strangerName').value.trim() || 'Anonymous';
+  const av = ($('#strangerAvatar').value.trim() || name[0] || 'A').toUpperCase();
+  const mode = $$('.match-pref-card.selected')[0]?.dataset.mode || 'auto';
+  const interest = $('#strangerInterest').value.trim();
+  settings.name = name; settings.avatar = av; saveSettings(); applySettings();
+  closeModal('strangerModal');
+  state.mode = 'stranger'; state.role = 'guest';
+  state.chatLog = []; saveChatLog([]);
+  state.stranger = new ZeroDayStranger(state.myId, name, av, mode, interest);
+  bindStrangerEvents(state.stranger);
+  showView('chat'); showHeaderButtons();
+  $('#strangerSearching h3').textContent = 'Searching for a stranger…';
+  $('#strangerSearching p').textContent = 'Looking for someone online anywhere in the world. This usually takes a few seconds.';
+  pushMessage({ sys:true, body:`🎲 Searching for a stranger${interest?` (interest: ${esc(interest)})`:''}…`, ts: now() });
+  try {
+    await state.stranger.start();
+  } catch (e) {
+    toast('Match error: ' + e.message, 'err');
+  }
 };
 
+/* ----- JOIN ----- */
 $('#joinConfirm').onclick = async () => {
   const name = $('#joinName').value.trim() || 'Anonymous';
   const av = ($('#joinAvatar').value.trim() || name[0] || 'A').toUpperCase();
   let code = $('#joinCode').value.trim().toUpperCase().replace(/\s/g,'');
   if (!code) { toast('Enter invite code', 'err'); return; }
-  // normalize: if user pasted 9 hex chars no dashes, add them
-  if (code.length === 6 && !code.includes('-')) code = code.slice(0,3)+'-'+code.slice(3);
-  if (code.length === 9 && !code.includes('-')) code = code.slice(0,3)+'-'+code.slice(3,6)+'-'+code.slice(6);
-
-  settings.name = name; settings.avatar = av; saveSettings();
-  applySettings();
+  // normalize: pad with dashes if user pasted plain hex
+  const stripped = code.replace(/-/g,'');
+  if (stripped.length === 6 && !code.includes('-')) code = code.slice(0,3)+'-'+code.slice(3);
+  if (stripped.length === 9 && !code.includes('-')) code = stripped.slice(0,3)+'-'+stripped.slice(3,6)+'-'+stripped.slice(6);
+  if (stripped.length === 12 && stripped.match(/^[A-F0-9]+$/) && !code.includes('-')) {
+    // group codes start with GRP- prefix
+    code = stripped;
+  }
+  settings.name = name; settings.avatar = av; saveSettings(); applySettings();
   closeModal('joinModal');
-
   state.invite = code;
-  state.role = 'guest';
-  saveSession({ invite: code, role:'guest', myId: uid(), name, avatar: av, created: now(), active:false });
-
-  state.peer = new ZeroDayPeer();
-  bindPeerEvents(state.peer);
-  showView('chat');
-  $('#peerName').textContent = 'Host';
-  $('#peerStatus').textContent = 'Connecting…';
-  pushMessage({ sys:true, body:`🔗 Joining room ${code}…`, ts: now() });
-
-  try {
-    await state.peer.join(code, (method) => {
-      toast('Signaling via ' + method.toUpperCase(), 'ok');
-      if (method === 'manual') {
-        pushMessage({ sys:true, body:'⚠️ Auto-signaling unavailable. Manual mode required.', ts: now() });
-      }
-    });
-  } catch(e) {
-    toast('Join error: ' + e.message, 'err');
-    pushMessage({ sys:true, body:'❌ Could not connect. Check the code and try again.', ts: now() });
+  // detect mode by prefix
+  const isGroup = code.startsWith('GRP-') || code.startsWith('GRP');
+  if (isGroup) {
+    state.mode = 'group'; state.role = 'guest';
+    state.chatLog = []; saveChatLog([]);
+    state.groupParticipants = new Map();
+    state.groupParticipants.set(state.myId, { name, avatar: av, online: true });
+    saveSession({ invite: code, role:'guest', mode:'group', myId: state.myId, name, avatar: av, created: now(), active:false });
+    state.group = new ZeroDayGroup(code, state.myId, name, av);
+    bindGroupEvents(state.group);
+    showView('chat'); showHeaderButtons();
+    updateChatHeader('Group', '👥', 'Joining mesh…', false);
+    pushMessage({ sys:true, body:`🔗 Joining group ${code}…`, ts: now() });
+    try { await state.group.start(); } catch (e) { toast('Join error: ' + e.message, 'err'); }
+  } else {
+    state.mode = 'private'; state.role = 'guest';
+    state.chatLog = []; saveChatLog([]);
+    saveSession({ invite: code, role:'guest', mode:'private', myId: state.myId, name, avatar: av, created: now(), active:false });
+    state.peer = new ZeroDayPeer();
+    bindPrivatePeerEvents(state.peer);
+    showView('chat'); showHeaderButtons();
+    state.peerName = 'Host'; state.peerAvatar = '?';
+    updateChatHeader('Host', '?', 'Connecting…', false);
+    pushMessage({ sys:true, body:`🔗 Joining ${code}…`, ts: now() });
+    try { await state.peer.join(code, (m) => toast('Signaling via ' + m.toUpperCase(), 'ok')); } catch (e) { toast('Join error: ' + e.message, 'err'); }
   }
 };
 
-$('#restoreBtn').onclick = () => {
-  const sess = loadSession();
-  if (!sess) { toast('No previous session found', 'warn'); return; }
-  // rejoin the same invite
-  $('#joinCode').value = sess.invite;
-  $('#joinName').value = sess.name || settings.name;
-  $('#joinAvatar').value = sess.avatar || settings.avatar;
-  // also restore chat log
-  state.chatLog = loadChatLog();
-  openModal('joinModal');
+/* ----- invite modal buttons ----- */
+$('#copyInviteBtn').onclick = () => { navigator.clipboard.writeText(state.invite).then(() => toast('Invite code copied', 'ok')); };
+$('#shareInviteBtn').onclick = async () => {
+  const link = `${location.origin}${location.pathname}#join=${encodeURIComponent(state.invite)}`;
+  if (navigator.share) { try { await navigator.share({ title:'ZeroDay Meet Chat', text:`Join my chat: ${state.invite}`, url: link }); } catch {} }
+  else { navigator.clipboard.writeText(link).then(() => toast('Share link copied', 'ok')); }
 };
 
+/* ----- back / clear / next ----- */
 $('#backBtn').onclick = () => {
-  if (state.peer) { try { state.peer.close(); } catch{} state.peer = null; }
-  state.chatLog = [];
-  clearSession();
-  showView('home');
-  setConnPill(false, 'Idle');
+  if (state.call) hangupCall();
+  if (state.peer) { try { state.peer.close(); } catch {} state.peer = null; }
+  if (state.group) { try { state.group.leave(); } catch {} state.group = null; }
+  if (state.stranger) { try { state.stranger.stop(); } catch {} state.stranger = null; }
+  state.chatLog = []; clearSession();
+  state.mode = null;
+  showView('home'); setConnPill(false, 'Idle');
 };
 
-$('#copyCodeBtn').onclick = () => {
-  if (state.invite) {
-    navigator.clipboard.writeText(state.invite).then(() => toast('Invite code copied', 'ok'));
+$('#copyCodeBtn').onclick = () => { if (state.invite) navigator.clipboard.writeText(state.invite).then(() => toast('Invite code copied', 'ok')); };
+
+$('#clearChatBtn').onclick = () => openModal('clearModal');
+$('#clearLocalBtn').onclick = () => {
+  state.chatLog = []; saveChatLog([]); renderMessages();
+  closeModal('clearModal');
+  toast('Conversation cleared on this device', 'ok');
+};
+$('#clearBothBtn').onclick = () => {
+  state.chatLog = []; saveChatLog([]); renderMessages();
+  if (state.peer) state.peer.send({ type:'clear-req' });
+  else if (state.group) state.group.broadcast({ type:'clear-req' });
+  else if (state.stranger) state.stranger.send({ type:'clear-req' });
+  closeModal('clearModal');
+  toast('Clear request sent to peer(s)', 'ok');
+};
+$('#clearHistoryBtn').onclick = () => {
+  localStorage.removeItem(CHATLOG_KEY);
+  localStorage.removeItem(SESSION_KEY);
+  state.chatLog = []; renderMessages();
+  closeModal('clearModal');
+  toast('All local history wiped', 'ok');
+};
+
+$('#nextStrangerBtn').onclick = () => {
+  if (state.stranger) {
+    pushMessage({ sys:true, body:'➡️ Finding next stranger…', ts: now() });
+    state.stranger.next();
   }
 };
+$('#cancelStrangerBtn').onclick = () => {
+  if (state.stranger) { state.stranger.stop(); }
+  $('#strangerSearching').style.display = 'none';
+  showView('home');
+};
 
-/* ---------- composer ---------- */
-const msgInput = $('#msgInput');
-const sendBtn = $('#sendBtn');
+/* ----- participants panel ----- */
+$('#participantsBtn').onclick = () => $('#participantsPanel').classList.add('active');
+$('#closeParticipants').onclick = () => $('#participantsPanel').classList.remove('active');
 
-function autoGrow() {
-  msgInput.style.height = 'auto';
-  msgInput.style.height = Math.min(msgInput.scrollHeight, 140) + 'px';
+/* ----- call buttons ----- */
+$('#voiceCallBtn').onclick = () => startOutgoingCall(false);
+$('#videoCallBtn').onclick = () => startOutgoingCall(true);
+$('#acceptCallBtn').onclick = () => acceptIncomingCall();
+$('#rejectCallBtn').onclick = () => rejectIncomingCall();
+$('#hangupBtn').onclick = () => hangupCall();
+$('#muteAudioBtn').onclick = function() {
+  if (!state.call) return;
+  const on = state.call.toggleAudio();
+  this.classList.toggle('muted', !on);
+};
+$('#muteVideoBtn').onclick = function() {
+  if (!state.call) return;
+  const on = state.call.toggleVideo();
+  this.classList.toggle('muted', !on);
+};
+
+/* ----- composer ----- */
+const msgInput = $('#msgInput'); const sendBtn = $('#sendBtn');
+function autoGrow() { msgInput.style.height = 'auto'; msgInput.style.height = Math.min(msgInput.scrollHeight, 140) + 'px'; }
+function isChatOpen() {
+  if (state.peer && state.peer.open) return true;
+  if (state.group && [...state.group.peers.values()].some(p => p.online)) return true;
+  if (state.stranger && state.stranger.dc && state.stranger.dc.readyState === 'open') return true;
+  return false;
 }
 msgInput.addEventListener('input', () => {
   autoGrow();
-  sendBtn.disabled = !state.peer || !state.peer.open;
-  // typing
-  if (settings.typing && state.peer && state.peer.open) {
-    state.peer.sendTyping(true);
+  sendBtn.disabled = !isChatOpen();
+  if (settings.typing) {
+    if (state.peer) state.peer.sendTyping(true);
+    else if (state.group) state.group.sendTyping(true);
+    else if (state.stranger) state.stranger.sendTyping(true);
     clearTimeout(state.myTypingTimer);
-    state.myTypingTimer = setTimeout(() => state.peer.sendTyping(false), 1500);
+    state.myTypingTimer = setTimeout(() => {
+      if (state.peer) state.peer.sendTyping(false);
+      else if (state.group) state.group.sendTyping(false);
+      else if (state.stranger) state.stranger.sendTyping(false);
+    }, 1500);
   }
 });
 msgInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey && settings.enter) {
-    e.preventDefault();
-    doSend();
-  }
+  if (e.key === 'Enter' && !e.shiftKey && settings.enter) { e.preventDefault(); doSend(); }
 });
 sendBtn.addEventListener('click', doSend);
 
 function doSend() {
   const text = msgInput.value.trim();
-  if (!text || !state.peer || !state.peer.open) return;
-  const id = uid();
-  const ts = now();
-  state.peer.send({ type:'text', body: text, id, ts });
-  pushMessage({ me:true, body: text, id, ts });
-  msgInput.value = '';
-  autoGrow();
-  sendBtn.disabled = !state.peer || !state.peer.open;
+  if (!text || !isChatOpen()) return;
+  const id = uid(); const ts = now();
+  const msg = { type:'text', body:text, id, ts };
+  if (state.peer) state.peer.send(msg);
+  else if (state.group) {
+    msg.from = state.myId; msg.author = settings.name;
+    state.group.broadcast(msg);
+  }
+  else if (state.stranger) state.stranger.send(msg);
+  pushMessage({ me:true, body:text, id, ts, author: state.mode==='group' ? settings.name : undefined });
+  msgInput.value = ''; autoGrow();
+  sendBtn.disabled = !isChatOpen();
 }
 
-/* ---------- file attach ---------- */
+/* ----- file attach ----- */
 $('#attachBtn').onclick = () => $('#file-input').click();
 $('#file-input').onchange = async (e) => {
   const f = e.target.files[0];
   if (!f) return;
   if (f.size > 5 * 1024 * 1024) { toast('Max 5MB for file transfer', 'warn'); return; }
-  // read as data URL
   const reader = new FileReader();
   reader.onload = () => {
     const dataUrl = reader.result;
-    const msg = { type:'file', name: f.name, size: f.size, dataUrl, ts: now() };
-    if (state.peer && state.peer.open) {
-      state.peer.send(msg);
-      pushMessage({ me:true, kind:'file', name: f.name, size: f.size, dataUrl, ts: msg.ts });
-      toast('File sent', 'ok');
-    } else {
-      toast('Not connected yet', 'err');
-    }
+    const msg = { type:'file', name:f.name, size:f.size, dataUrl, ts: now() };
+    if (state.peer) { state.peer.send(msg); pushMessage({ me:true, kind:'file', name:f.name, size:f.size, dataUrl, ts: msg.ts }); toast('File sent','ok'); }
+    else if (state.group) { msg.from = state.myId; msg.author = settings.name; state.group.broadcast(msg); pushMessage({ me:true, kind:'file', name:f.name, size:f.size, dataUrl, ts: msg.ts, author: settings.name }); toast('File sent to group','ok'); }
+    else if (state.stranger) { state.stranger.send(msg); pushMessage({ me:true, kind:'file', name:f.name, size:f.size, dataUrl, ts: msg.ts }); toast('File sent','ok'); }
+    else toast('Not connected yet', 'err');
   };
   reader.readAsDataURL(f);
   e.target.value = '';
 };
 
-/* ---------- settings drawer ---------- */
+/* ----- settings drawer ----- */
 $('#settingsBtn').onclick = () => $('#settingsDrawer').classList.add('active');
 $('#closeSettings').onclick = () => $('#settingsDrawer').classList.remove('active');
-
-$$('.theme-swatch').forEach(s => s.onclick = () => {
-  settings.theme = s.dataset.theme; saveSettings(); applySettings();
-});
+$$('.theme-swatch').forEach(s => s.onclick = () => { settings.theme = s.dataset.theme; saveSettings(); applySettings(); });
 $$('.scale-row button').forEach(b => b.onclick = () => {
   settings.scale = parseFloat(b.dataset.scale); settings.manualScale = true; saveSettings();
   document.documentElement.style.setProperty('--scale', settings.scale);
   $$('.scale-row button').forEach(x => x.classList.toggle('active', x === b));
 });
 $$('[data-toggle]').forEach(t => t.onclick = () => {
-  t.classList.toggle('on');
-  settings[t.dataset.toggle] = t.classList.contains('on');
-  saveSettings();
+  t.classList.toggle('on'); settings[t.dataset.toggle] = t.classList.contains('on'); saveSettings();
 });
 $('#setNameInput').addEventListener('input', (e) => {
   settings.name = e.target.value || 'Anonymous';
@@ -1671,78 +1883,35 @@ $('#setNameInput').addEventListener('input', (e) => {
   saveSettings(); applySettings();
 });
 $('#clearBtn').onclick = () => {
-  if (!confirm('Clear all local data? This cannot be undone.')) return;
-  localStorage.removeItem(STORE_KEY);
-  localStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem(CHATLOG_KEY);
-  if (state.peer) { try { state.peer.close(); } catch{} }
+  if (!confirm('Clear all local data?')) return;
+  localStorage.clear();
+  if (state.peer) try { state.peer.close(); } catch {}
+  if (state.group) try { state.group.leave(); } catch {}
+  if (state.stranger) try { state.stranger.stop(); } catch {}
   location.reload();
 };
-
-/* ============================================================
-   DYNAMIC LIBRARY LOADER (mqtt + peerjs + qrcode)
-   These are optional public libraries used as fallbacks.
-   No API key needed for any of them.
-============================================================ */
-function loadScript(src) {
-  return new Promise((res, rej) => {
-    if (document.querySelector(`script[src="${src}"]`)) return res();
-    const s = document.createElement('script');
-    s.src = src; s.async = true;
-    s.onload = res; s.onerror = rej;
-    document.head.appendChild(s);
-  });
-}
 
 /* ============================================================
    BOOT
 ============================================================ */
 async function boot() {
-  applySettings();
-  autoScale();
+  applySettings(); autoScale();
   window.addEventListener('resize', autoScale);
   window.addEventListener('orientationchange', autoScale);
-
-  // check for #join= in URL — auto-open join modal
   const h = location.hash.match(/join=([A-Z0-9-]+)/i);
-  if (h) {
-    $('#joinCode').value = h[1];
-    openModal('joinModal');
-  }
-
-  // load optional libs in background (non-blocking)
+  if (h) { $('#joinCode').value = h[1]; openModal('joinModal'); }
+  // preload mqtt
   loadScript('https://cdn.jsdelivr.net/npm/mqtt@5.3.5/dist/mqtt.min.js').catch(()=>{});
-  loadScript('https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js').catch(()=>{});
-
-  // auto-resume if enabled
-  if (settings.resume) {
-    const sess = loadSession();
-    if (sess && sess.active) {
-      // restore chat log
-      state.chatLog = loadChatLog();
-      if (state.chatLog.length) {
-        toast('Previous session found. Tap "Resume" to reconnect.', 'warn');
-      }
-    }
-  }
-
-  // visibility — send presence
+  // visibility → presence
   document.addEventListener('visibilitychange', () => {
-    if (state.peer && state.peer.open) {
-      state.peer.sendPresence(!document.hidden);
-    }
+    if (state.peer && state.peer.open) state.peer.sendPresence(!document.hidden);
   });
-
-  // online/offline
   window.addEventListener('online', () => toast('Back online', 'ok'));
   window.addEventListener('offline', () => toast('You are offline. P2P may be interrupted.', 'warn'));
-
-  console.log('%cZeroDay Meet Chat v1.0 booted', 'color:#7c5cff; font-weight:700; font-size:14px');
-  console.log('%cNo API key. No server storage. Pure WebRTC P2P.', 'color:#00e5ff');
+  console.log('%cZeroDay Meet Chat v2.0 booted', 'color:#7c5cff; font-weight:700; font-size:14px');
+  console.log('%cModes: Private · Group · Stranger · Voice/Video Calls', 'color:#00e5ff');
 }
-
 boot();
-
 </script>
 </body>
 </html>

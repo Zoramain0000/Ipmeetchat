@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -9,7 +9,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob: https: wss:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self' https: wss:;" />
 <meta name="referrer" content="no-referrer" />
 <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-<title>ZeroDay Meet Chat v3 · Encrypted · Discord-grade</title>
+<title>ZeroDay Meet Chat v4 · Encrypted · Full Messenger</title>
 <style>
 /* ==========================================================================
    ZeroDay Meet Chat v3.0
@@ -318,8 +318,58 @@ main { position:relative; overflow:hidden; background:transparent; }
 .emoji-picker .grid { flex:1; overflow-y:auto; padding:8px; display:grid; grid-template-columns:repeat(8, 1fr); gap:2px; }
 .emoji-picker .grid button { font-size:1.4rem; padding:4px; border-radius:6px; display:grid; place-items:center; transition:background .1s; }
 .emoji-picker .grid button:hover { background:var(--bg-hover); }
-.emoji-picker .search { padding:8px; border-bottom:1px solid var(--border); }
-.emoji-picker .search input { width:100%; padding:7px 10px; border-radius:8px; background:var(--bg); border:1px solid var(--border-2); color:var(--text); font-size:.82rem; }
+.emoji-picker .search { padding:8px; border-bottom:1px solid var(--border); position:relative; }
+.emoji-picker .search input { width:100%; padding:7px 32px 7px 10px; border-radius:8px; background:var(--bg); border:1px solid var(--border-2); color:var(--text); font-size:.82rem; }
+.emoji-picker .close-btn { position:absolute; top:14px; right:14px; width:24px; height:24px; border-radius:50%; background:var(--bg-elev); border:1px solid var(--border-2); display:grid; place-items:center; cursor:pointer; color:var(--text-dim); }
+.emoji-picker .close-btn:hover { background:var(--danger); color:#fff; border-color:var(--danger); }
+.emoji-picker .close-btn svg { width:12px; height:12px; }
+
+/* Voice message recorder */
+.voice-recorder { display:flex; align-items:center; gap:10px; padding:8px 14px; background:var(--bg-elev); border:1px solid var(--accent); border-radius:14px; margin:0 12px 6px; }
+.voice-recorder .rec-dot { width:12px; height:12px; border-radius:50%; background:var(--danger); animation:pulse 1s infinite; }
+.voice-recorder .rec-time { font-family:var(--mono); font-size:.9rem; font-weight:700; color:var(--danger); flex:1; }
+.voice-recorder button { padding:6px 14px; border-radius:8px; font-size:.78rem; font-weight:700; cursor:pointer; }
+.voice-recorder .cancel { background:var(--bg); color:var(--text-dim); border:1px solid var(--border-2); }
+.voice-recorder .send { background:var(--accent); color:#fff; border:none; }
+.voice-recorder .send:disabled { opacity:.4; }
+
+/* Voice message bubble */
+.voice-msg { display:flex; align-items:center; gap:10px; padding:8px 12px; background:rgba(255,255,255,0.06); border-radius:12px; max-width:260px; }
+.voice-msg .play-btn { width:34px; height:34px; border-radius:50%; background:var(--accent); color:#fff; display:grid; place-items:center; cursor:pointer; flex-shrink:0; }
+.voice-msg .play-btn svg { width:14px; height:14px; }
+.voice-msg .vbar { flex:1; }
+.voice-msg .vtime { font-size:.72rem; color:var(--text-dim); font-family:var(--mono); }
+.voice-msg .vwave { height:24px; display:flex; align-items:center; gap:2px; margin-top:3px; }
+.voice-msg .vwave span { width:3px; background:var(--accent); border-radius:2px; }
+
+/* Disappearing messages indicator */
+.dm-indicator { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:999px; background:rgba(255,179,71,0.15); border:1px solid rgba(255,179,71,0.4); font-size:.7rem; font-weight:600; color:var(--warn); cursor:pointer; }
+
+/* Quick reactions bar */
+.quick-reactions { position:absolute; top:-32px; left:50%; transform:translateX(-50%); display:none; gap:2px; background:var(--bg-soft); border:1px solid var(--border-2); border-radius:999px; padding:3px 6px; box-shadow:var(--shadow); z-index:6; }
+.msg-row:hover .quick-reactions { display:flex; }
+.quick-reactions button { font-size:1.1rem; padding:2px 4px; border-radius:50%; transition:all .1s; }
+.quick-reactions button:hover { background:var(--bg-hover); transform:scale(1.2); }
+
+/* Starred indicator */
+.msg-row .star-badge { color:var(--warn); font-size:.7rem; margin-left:4px; }
+
+/* Forward modal */
+.fwd-target { padding:12px; background:var(--bg-elev); border:1px solid var(--border); border-radius:10px; margin-bottom:8px; cursor:pointer; }
+.fwd-target:hover { border-color:var(--accent); }
+.fwd-target.selected { border-color:var(--accent); background:var(--bg-active); }
+
+/* Poll */
+.poll-bubble { background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:12px; padding:12px; max-width:320px; margin-top:4px; }
+.poll-bubble .pq { font-weight:700; margin-bottom:8px; }
+.poll-bubble .po { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:8px; cursor:pointer; margin-bottom:4px; transition:background .12s; }
+.poll-bubble .po:hover { background:var(--bg-hover); }
+.poll-bubble .po .pbar { flex:1; height:8px; background:var(--bg); border-radius:4px; overflow:hidden; position:relative; }
+.poll-bubble .po .pbar-fill { height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius:4px; transition:width .3s; }
+.poll-bubble .po .pcount { font-size:.78rem; color:var(--text-dim); font-weight:600; min-width:30px; text-align:right; }
+
+/* Scheduled badge */
+.sched-badge { display:inline-flex; align-items:center; gap:4px; font-size:.66rem; color:var(--accent); padding:1px 6px; border:1px solid var(--accent); border-radius:4px; margin-left:5px; }
 
 /* ---------- CONTEXT MENU ---------- */
 .ctx-menu { position:fixed; z-index:2000; background:var(--bg-soft); border:1px solid var(--border-2); border-radius:10px; box-shadow:var(--shadow); padding:4px; min-width:180px; display:none; }
@@ -475,7 +525,7 @@ main { position:relative; overflow:hidden; background:transparent; }
   <header class="topbar">
     <div class="brand">
       <div class="logo">0D</div>
-      <div class="name">ZeroDay Meet<small>v3 · Encrypted · Discord-grade</small></div>
+      <div class="name">ZeroDay Meet<small>v4 · Full Messenger · E2E</small></div>
     </div>
     <div class="spacer"></div>
     <div class="enc-badge" id="encBadge" title="End-to-end encrypted">
@@ -587,6 +637,15 @@ main { position:relative; overflow:hidden; background:transparent; }
               <button class="icon-btn" id="nextStrangerBtn" title="Next stranger" style="display:none;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
+              <button class="icon-btn" id="muteBtn" title="Mute notifications">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              </button>
+              <button class="icon-btn" id="disappearBtn" title="Disappearing messages">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </button>
+              <button class="icon-btn" id="starredBtn" title="Starred messages">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </button>
               <button class="icon-btn" id="searchBtn" title="Search messages">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-4.35-4.35M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z"/></svg>
               </button>
@@ -637,17 +696,25 @@ main { position:relative; overflow:hidden; background:transparent; }
               <button class="attach-btn" id="attachBtn" aria-label="Send file">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
               </button>
+              <button class="attach-btn" id="voiceRecBtn" aria-label="Record voice message" title="Record voice message">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+              </button>
               <textarea id="msgInput" rows="1" placeholder="Type a message… Use / for commands"></textarea>
               <button class="send-btn" id="sendBtn" disabled aria-label="Send">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
               </button>
             </div>
-            <div class="hint" id="composerHint">Press <b>Enter</b> to send · <b>Shift+Enter</b> for newline · <b>/</b> for commands · <b>Ctrl+K</b> for palette</div>
+            <div class="hint" id="composerHint">Press <b>Enter</b> to send · <b>Shift+Enter</b> for newline · <b>/</b> for commands · <b>Ctrl+K</b> for palette · 🎤 hold/press mic to record</div>
           </div>
 
           <!-- EMOJI PICKER -->
           <div class="emoji-picker" id="emojiPicker">
-            <div class="search"><input type="text" id="emojiSearch" placeholder="Search emoji…" /></div>
+            <div class="search">
+              <input type="text" id="emojiSearch" placeholder="Search emoji…" />
+              <button class="close-btn" id="closeEmojiBtn" title="Close (Esc)" aria-label="Close emoji picker">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
             <div class="head" id="emojiCats"></div>
             <div class="grid" id="emojiGrid"></div>
           </div>
@@ -806,6 +873,69 @@ main { position:relative; overflow:hidden; background:transparent; }
       <button class="btn danger" id="clearHistoryBtn" style="width:100%;">Wipe All Local History</button>
       <button class="btn ghost" data-close style="width:100%;">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- FORWARD MODAL -->
+<div class="modal-overlay" id="forwardModal">
+  <div class="modal">
+    <h2>Forward Message</h2>
+    <p class="sub">Forward this message to another chat by entering the invite code.</p>
+    <div class="field"><label>Target Invite Code</label><input type="text" class="code" id="forwardTarget" placeholder="XXXX-XXXX-XXXX" maxlength="20" /></div>
+    <div style="background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:14px;font-size:.84rem;color:var(--text-dim);" id="forwardPreview"></div>
+    <div class="actions">
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn" id="forwardConfirmBtn">Forward</button>
+    </div>
+  </div>
+</div>
+
+<!-- MESSAGE INFO MODAL -->
+<div class="modal-overlay" id="msgInfoModal">
+  <div class="modal">
+    <h2>Message Info</h2>
+    <p class="sub">Delivery and read receipts for this message.</p>
+    <div id="msgInfoBody" style="font-size:.86rem;line-height:1.7;"></div>
+    <div class="actions"><button class="btn ghost" data-close style="flex:1;">Close</button></div>
+  </div>
+</div>
+
+<!-- DISAPPEARING MESSAGES MODAL -->
+<div class="modal-overlay" id="disappearModal">
+  <div class="modal">
+    <h2>Disappearing Messages</h2>
+    <p class="sub">Messages auto-delete after a set time. Both peers must support this.</p>
+    <div class="actions" style="flex-direction:column;gap:8px;">
+      <button class="btn ghost" data-dm="0" style="width:100%;">Off</button>
+      <button class="btn ghost" data-dm="30" style="width:100%;">30 seconds</button>
+      <button class="btn ghost" data-dm="300" style="width:100%;">5 minutes</button>
+      <button class="btn ghost" data-dm="3600" style="width:100%;">1 hour</button>
+      <button class="btn ghost" data-dm="86400" style="width:100%;">24 hours</button>
+      <button class="btn ghost" data-dm="604800" style="width:100%;">7 days</button>
+      <button class="btn ghost" data-close style="width:100%;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- POLL CREATOR MODAL -->
+<div class="modal-overlay" id="pollModal">
+  <div class="modal">
+    <h2>Create Poll</h2>
+    <p class="sub">Ask a question with multiple choices. Peers can vote.</p>
+    <div class="field"><label>Question</label><input type="text" id="pollQuestion" placeholder="What's your favorite color?" maxlength="120" /></div>
+    <div class="field"><label>Options (one per line, max 6)</label><textarea id="pollOptions" rows="5" placeholder="Red&#10;Green&#10;Blue"></textarea></div>
+    <div class="actions"><button class="btn ghost" data-close>Cancel</button><button class="btn" id="pollConfirmBtn">Create Poll</button></div>
+  </div>
+</div>
+
+<!-- SCHEDULE MESSAGE MODAL -->
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal">
+    <h2>Schedule Message</h2>
+    <p class="sub">Send this message at a specific time. Schedule stored locally.</p>
+    <div class="field"><label>Message</label><textarea id="schedMessage" rows="3" placeholder="Type your message…"></textarea></div>
+    <div class="field"><label>Send at (date &amp; time)</label><input type="datetime-local" id="schedTime" /></div>
+    <div class="actions"><button class="btn ghost" data-close>Cancel</button><button class="btn" id="schedConfirmBtn">Schedule</button></div>
   </div>
 </div>
 
@@ -2705,7 +2835,587 @@ $('#setStatusInput').addEventListener('input', (e) => { settings.customStatus = 
 $('#clearBtn').onclick = () => { if (!confirm('Clear all local data?')) return; indexedDB.deleteDatabase(DB_NAME); localStorage.clear(); if (state.peer) try { state.peer.close(); } catch {} if (state.group) try { state.group.leave(); } catch {} if (state.stranger) try { state.stranger.stop(); } catch {} location.reload(); };
 
 /* ============================================================
-   BOOT
+   v4 NEW FEATURES — voice msgs, disappearing, starred, forward,
+   mute, last seen, drafts, quick reactions, msg info, polls, sched
+============================================================ */
+
+/* --- Emoji picker close behavior (FIX: previously couldn't close) --- */
+$('#closeEmojiBtn').onclick = () => $('#emojiPicker').classList.remove('active');
+// Click outside to close
+document.addEventListener('click', (e) => {
+  if (!$('#emojiPicker').classList.contains('active')) return;
+  if (!e.target.closest('#emojiPicker') && !e.target.closest('#emojiBtn')) {
+    $('#emojiPicker').classList.remove('active');
+  }
+});
+// Escape to close (already in document keydown, but make explicit)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && $('#emojiPicker').classList.contains('active')) {
+    $('#emojiPicker').classList.remove('active');
+  }
+});
+
+/* --- Voice Messages --- */
+let voiceRecorder = null;
+let voiceChunks = [];
+let voiceStartTime = 0;
+let voiceTimer = null;
+let voiceStream = null;
+
+$('#voiceRecBtn').onclick = async () => {
+  if (voiceRecorder && voiceRecorder.state === 'recording') {
+    stopVoiceRecording(true);
+    return;
+  }
+  try {
+    voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    voiceChunks = [];
+    voiceRecorder = new MediaRecorder(voiceStream);
+    voiceRecorder.ondataavailable = (e) => { if (e.data.size > 0) voiceChunks.push(e.data); };
+    voiceRecorder.onstop = async () => {
+      const blob = new Blob(voiceChunks, { type: 'audio/webm' });
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const duration = Math.floor((Date.now() - voiceStartTime) / 1000);
+        if (duration < 1) { toast('Recording too short', 'warn'); return; }
+        const msg = { type:'voice', dataUrl: reader.result, duration, ts: now(), id: uid() };
+        if (state.peer) { await state.peer.send(msg); pushVoiceMessage({ me:true, ...msg, author: settings.name, authorAvatar: settings.avatar }); }
+        else if (state.group) { msg.from = state.myId; msg.author = settings.name; msg.authorAvatar = settings.avatar; await state.group.broadcast(msg); pushVoiceMessage({ me:true, ...msg }); }
+        else if (state.stranger) { await state.stranger.send(msg); pushVoiceMessage({ me:true, ...msg, author: settings.name, authorAvatar: settings.avatar }); }
+      };
+      reader.readAsDataURL(blob);
+      voiceStream.getTracks().forEach(t => t.stop());
+    };
+    voiceRecorder.start();
+    voiceStartTime = Date.now();
+    showVoiceRecorderUI();
+  } catch (e) {
+    toast('Mic access denied: ' + e.message, 'err');
+  }
+};
+
+function showVoiceRecorderUI() {
+  let rec = $('#voiceRecorderUI');
+  if (!rec) {
+    rec = document.createElement('div');
+    rec.id = 'voiceRecorderUI';
+    rec.className = 'voice-recorder';
+    rec.innerHTML = `
+      <div class="rec-dot"></div>
+      <div class="rec-time" id="voiceRecTime">0:00</div>
+      <button class="cancel" id="voiceCancelBtn">Cancel</button>
+      <button class="send" id="voiceSendBtn">Send</button>
+    `;
+    $('.composer').prepend(rec);
+    $('#voiceCancelBtn').onclick = () => stopVoiceRecording(false);
+    $('#voiceSendBtn').onclick = () => stopVoiceRecording(true);
+  }
+  rec.style.display = 'flex';
+  voiceTimer = setInterval(() => {
+    const sec = Math.floor((Date.now() - voiceStartTime) / 1000);
+    $('#voiceRecTime').textContent = `${Math.floor(sec/60)}:${(sec%60).toString().padStart(2,'0')}`;
+  }, 200);
+}
+
+function stopVoiceRecording(send) {
+  if (!voiceRecorder || voiceRecorder.state !== 'recording') return;
+  clearInterval(voiceTimer);
+  if (!send) voiceRecorder.onstop = null; // discard
+  voiceRecorder.stop();
+  const rec = $('#voiceRecorderUI');
+  if (rec) rec.style.display = 'none';
+  if (voiceStream) voiceStream.getTracks().forEach(t => t.stop());
+}
+
+function pushVoiceMessage(m) {
+  state.chatLog.push(m);
+  const host = $('#messages');
+  host.appendChild(buildMsgRow(m, false));
+  host.scrollTop = host.scrollHeight;
+  if (settings.sound && !m.me) playBeep();
+}
+
+/* Override buildMsgRow to support voice messages */
+const _origBuildMsgRow = buildMsgRow;
+buildMsgRow = function(m, groupped) {
+  if (m.type === 'voice' || m.kind === 'voice') {
+    const el = document.createElement('div');
+    el.className = 'msg-row' + (groupped ? ' groupped' : '');
+    el.dataset.id = m.id || '';
+    const av = groupped ? '' : esc(m.authorAvatar || (m.me ? settings.avatar : state.peerAvatar) || '?');
+    const authorName = m.me ? settings.name + ' (you)' : (m.author || state.peerName || 'Peer');
+    const ts = fmtTime(m.ts);
+    const waves = Array.from({length: 20}, (_, i) => {
+      const h = 4 + Math.abs(Math.sin(i * 0.7)) * 18;
+      return `<span style="height:${h}px"></span>`;
+    }).join('');
+    el.innerHTML = `
+      <div class="av-mini">${av}</div>
+      <div class="msg-body">
+        <div class="msg-meta"><span class="author">${esc(authorName)}</span><span class="ts">${ts}</span></div>
+        <div class="voice-msg">
+          <div class="play-btn" onclick="window._playVoice('${m.id}','${m.dataUrl}')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <div class="vbar">
+            <div class="vtime">${Math.floor(m.duration/60)}:${(m.duration%60).toString().padStart(2,'0')}</div>
+            <div class="vwave">${waves}</div>
+          </div>
+        </div>
+      </div>`;
+    return el;
+  }
+  if (m.type === 'poll' || m.kind === 'poll') {
+    const el = document.createElement('div');
+    el.className = 'msg-row' + (groupped ? ' groupped' : '');
+    el.dataset.id = m.id || '';
+    const av = groupped ? '' : esc(m.authorAvatar || (m.me ? settings.avatar : state.peerAvatar) || '?');
+    const authorName = m.me ? settings.name + ' (you)' : (m.author || state.peerName || 'Peer');
+    const totalVotes = (m.votes ? Object.values(m.votes).reduce((s, v) => s + v.length, 0) : 0);
+    let optionsHTML = '';
+    (m.options || []).forEach((opt, i) => {
+      const votes = (m.votes && m.votes[i]) ? m.votes[i].length : 0;
+      const pct = totalVotes > 0 ? (votes / totalVotes * 100) : 0;
+      const myVote = m.votes && m.votes[i] && m.votes[i].includes(state.myId);
+      optionsHTML += `<div class="po" onclick="window._votePoll('${m.id}',${i})" style="${myVote?'background:rgba(88,101,242,0.15)':''}">
+        <span>${myVote ? '◉' : '○'}</span>
+        <div class="pbar"><div class="pbar-fill" style="width:${pct}%"></div></div>
+        <span class="pcount">${votes}</span>
+      </div>`;
+    });
+    el.innerHTML = `
+      <div class="av-mini">${av}</div>
+      <div class="msg-body">
+        <div class="msg-meta"><span class="author">${esc(authorName)}</span><span class="ts">${fmtTime(m.ts)}</span><span class="badge">POLL</span></div>
+        <div class="poll-bubble">
+          <div class="pq">${esc(m.question)}</div>
+          ${optionsHTML}
+          <div style="font-size:.72rem;color:var(--text-dim);margin-top:6px;">${totalVotes} vote${totalVotes!==1?'s':''}</div>
+        </div>
+      </div>`;
+    return el;
+  }
+  return _origBuildMsgRow(m, groupped);
+};
+
+window._playVoice = (id, dataUrl) => {
+  const audio = new Audio(dataUrl);
+  audio.play();
+};
+
+window._votePoll = async (id, optIdx) => {
+  const m = state.chatLog.find(x => x.id === id);
+  if (!m) return;
+  if (!m.votes) m.votes = {};
+  // remove my vote from all options
+  Object.keys(m.votes).forEach(k => { m.votes[k] = m.votes[k].filter(x => x !== state.myId); if (m.votes[k].length === 0) delete m.votes[k]; });
+  // add to selected
+  if (!m.votes[optIdx]) m.votes[optIdx] = [];
+  m.votes[optIdx].push(state.myId);
+  renderMessages();
+  if (state.peer) await state.peer.send({ type:'poll-vote', id, option: optIdx, voter: state.myId });
+  else if (state.group) await state.group.broadcast({ type:'poll-vote', id, option: optIdx, voter: state.myId });
+};
+
+/* --- Disappearing Messages --- */
+let disappearTTL = 0;
+$('#disappearBtn').onclick = () => openModal('disappearModal');
+$$('[data-dm]').forEach(b => b.onclick = () => {
+  disappearTTL = parseInt(b.dataset.dm);
+  closeModal('disappearModal');
+  if (disappearTTL === 0) {
+    $('#disappearBtn').style.color = '';
+    toast('Disappearing messages OFF', 'ok');
+  } else {
+    $('#disappearBtn').style.color = 'var(--warn)';
+    toast(`Disappearing messages ON (${disappearTTL}s)`, 'ok');
+  }
+  // broadcast setting to peer
+  if (state.peer) state.peer.send({ type:'dm-setting', ttl: disappearTTL });
+  // schedule cleanup
+  scheduleDisappearingCleanup();
+});
+
+function scheduleDisappearingCleanup() {
+  if (window._dmInterval) clearInterval(window._dmInterval);
+  if (disappearTTL === 0) return;
+  window._dmInterval = setInterval(() => {
+    const now = Date.now();
+    let changed = false;
+    state.chatLog = state.chatLog.filter(m => {
+      if (m.sys || m.deleted) return true;
+      if (m.ttl) {
+        if (now - m.ts > m.ttl * 1000) { changed = true; return false; }
+      } else if (disappearTTL > 0 && (now - (m.ts || 0) > disappearTTL * 1000)) {
+        changed = true; return false;
+      }
+      return true;
+    });
+    if (changed) renderMessages();
+  }, 5000);
+}
+
+/* --- Starred Messages --- */
+state.starredMessages = new Set();
+$('#starredBtn').onclick = () => { renderStarredList(); $('#starredPanel')?.classList.toggle('active'); if (!$('#starredPanel')) showStarredModal(); };
+
+function showStarredModal() {
+  const items = [...state.starredMessages].map(id => state.chatLog.find(x => x.id === id)).filter(Boolean);
+  if (items.length === 0) { toast('No starred messages', 'warn'); return; }
+  const list = items.map(m => `${fmtDate(m.ts)} ${m.me?'You':(m.author||state.peerName)}: ${(m.body||'[file]').slice(0,100)}`).join('\n');
+  pushMessage({ sys:true, body:`⭐ Starred messages (${items.length}):\n${list}`, ts: now() });
+}
+
+function renderStarredList() { /* inline display in chat for now */ }
+
+window._starMsg = (id) => {
+  if (state.starredMessages.has(id)) { state.starredMessages.delete(id); toast('Unstarred', 'ok'); }
+  else { state.starredMessages.add(id); toast('Starred', 'ok'); }
+  renderMessages();
+};
+
+/* --- Forward Message --- */
+let forwardTargetMsg = null;
+window._forwardMsg = (id) => {
+  const m = state.chatLog.find(x => x.id === id);
+  if (!m) return;
+  forwardTargetMsg = m;
+  $('#forwardPreview').textContent = `Message: ${(m.body || '[file]').slice(0, 100)}`;
+  openModal('forwardModal');
+};
+
+$('#forwardConfirmBtn').onclick = async () => {
+  const target = $('#forwardTarget').value.trim().toUpperCase();
+  if (!target || !forwardTargetMsg) { toast('Enter target invite code', 'err'); return; }
+  // For now, copy message body to clipboard with target invite info
+  // (Full forwarding would require opening a new peer connection)
+  const text = forwardTargetMsg.body || '';
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(`Message copied — open chat ${target} and paste`, 'ok');
+    pushMessage({ sys:true, body:`📤 Forwarded message copied. Open chat ${target} to paste.`, ts: now() });
+  } catch {
+    toast('Copy failed', 'err');
+  }
+  closeModal('forwardModal');
+};
+
+/* --- Mute peer --- */
+let muted = false;
+$('#muteBtn').onclick = () => {
+  muted = !muted;
+  $('#muteBtn').style.color = muted ? 'var(--danger)' : '';
+  $('#muteBtn').title = muted ? 'Unmute' : 'Mute';
+  toast(muted ? 'Notifications muted' : 'Notifications on', 'ok');
+};
+
+/* Override playBeep to respect mute */
+const _origPlayBeep = playBeep;
+playBeep = function() {
+  if (muted) return;
+  _origPlayBeep();
+};
+
+/* --- Last seen tracking --- */
+state.peerLastSeen = null;
+function updatePeerLastSeen() {
+  if (!state.peerOnline && state.peerLastSeen) {
+    const ago = Math.floor((Date.now() - state.peerLastSeen) / 1000);
+    let str;
+    if (ago < 60) str = `Last seen just now`;
+    else if (ago < 3600) str = `Last seen ${Math.floor(ago/60)}m ago`;
+    else if (ago < 86400) str = `Last seen ${Math.floor(ago/3600)}h ago`;
+    else str = `Last seen ${Math.floor(ago/86400)}d ago`;
+    $('#peerStatus').textContent = str;
+  }
+}
+setInterval(updatePeerLastSeen, 30000);
+
+// Hook into presence events
+const _origBindPrivate = bindPrivatePeerEvents;
+bindPrivatePeerEvents = function(p) {
+  _origBindPrivate(p);
+  const origPresence = p.onPresence;
+  p.onPresence = (online) => {
+    if (!online) state.peerLastSeen = Date.now();
+    else state.peerLastSeen = null;
+    origPresence && origPresence(online);
+  };
+};
+
+/* --- Drafts auto-save --- */
+const DRAFT_KEY = 'zdmc.v4.draft';
+let draftTimer = null;
+msgInput.addEventListener('input', () => {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => {
+    if (state.invite) {
+      const drafts = JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}');
+      drafts[state.invite] = msgInput.value;
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts));
+    }
+  }, 500);
+});
+function restoreDraft() {
+  if (!state.invite) return;
+  try {
+    const drafts = JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}');
+    if (drafts[state.invite]) {
+      msgInput.value = drafts[state.invite];
+      autoGrow();
+      sendBtn.disabled = !isChatOpen();
+    }
+  } catch {}
+}
+function clearDraft() {
+  if (!state.invite) return;
+  try {
+    const drafts = JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}');
+    delete drafts[state.invite];
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts));
+  } catch {}
+}
+// Hook into doSend to clear draft after sending
+const _origDoSend = doSend;
+doSend = async function(textOverride, isAction) {
+  await _origDoSend(textOverride, isAction);
+  if (!textOverride && !state.editingId) clearDraft();
+};
+
+/* --- Quick reactions bar (appears on hover) --- */
+const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+const _origBuildHover = window._buildHoverActions;
+// Inject quick reactions into message rows
+const _origBuildMsgRow2 = buildMsgRow;
+buildMsgRow = function(m, groupped) {
+  const el = _origBuildMsgRow2(m, groupped);
+  if (!m.deleted && !m.sys) {
+    const qr = document.createElement('div');
+    qr.className = 'quick-reactions';
+    QUICK_REACTIONS.forEach(e => {
+      const b = document.createElement('button');
+      b.textContent = e;
+      b.onclick = (ev) => { ev.stopPropagation(); window._toggleReaction(m.id, e); };
+      qr.appendChild(b);
+    });
+    el.style.position = 'relative';
+    el.appendChild(qr);
+  }
+  return el;
+};
+
+/* --- Message Info modal --- */
+window._showMsgInfo = (id) => {
+  const m = state.chatLog.find(x => x.id === id);
+  if (!m) return;
+  const body = $('#msgInfoBody');
+  body.innerHTML = `
+    <div><strong>Sent at:</strong> ${fmtDate(m.ts)}</div>
+    <div><strong>Author:</strong> ${esc(m.me ? settings.name : (m.author || state.peerName))}</div>
+    <div><strong>Status:</strong> ${m.read ? '✓✓ Read' : '✓ Delivered'}</div>
+    ${m.readAt ? `<div><strong>Read at:</strong> ${fmtDate(m.readAt)}</div>` : ''}
+    ${m.edited ? `<div><strong>Edited:</strong> Yes</div>` : ''}
+    ${state.pinnedMessages.has(id) ? '<div><strong>Pinned:</strong> Yes</div>' : ''}
+    ${state.starredMessages.has(id) ? '<div><strong>Starred:</strong> Yes</div>' : ''}
+    <div><strong>Message ID:</strong> <span class="mono" style="font-size:.72rem">${id}</span></div>
+  `;
+  openModal('msgInfoModal');
+};
+
+/* --- Poll creator --- */
+$('#pollConfirmBtn').onclick = async () => {
+  const q = $('#pollQuestion').value.trim();
+  const opts = $('#pollOptions').value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 6);
+  if (!q || opts.length < 2) { toast('Need question + 2+ options', 'err'); return; }
+  closeModal('pollModal');
+  const msg = { type:'poll', question: q, options: opts, votes: {}, ts: now(), id: uid() };
+  if (state.peer) { await state.peer.send(msg); pushMessage({ me:true, ...msg, author: settings.name, authorAvatar: settings.avatar }); }
+  else if (state.group) { msg.from = state.myId; msg.author = settings.name; msg.authorAvatar = settings.avatar; await state.group.broadcast(msg); pushMessage({ me:true, ...msg }); }
+  else if (state.stranger) { await state.stranger.send(msg); pushMessage({ me:true, ...msg, author: settings.name, authorAvatar: settings.avatar }); }
+  $('#pollQuestion').value = ''; $('#pollOptions').value = '';
+};
+
+/* --- Scheduled Messages --- */
+state.scheduledMessages = [];
+$('#schedConfirmBtn').onclick = () => {
+  const text = $('#schedMessage').value.trim();
+  const timeStr = $('#schedTime').value;
+  if (!text || !timeStr) { toast('Enter message and time', 'err'); return; }
+  const when = new Date(timeStr).getTime();
+  if (when <= Date.now()) { toast('Pick a future time', 'err'); return; }
+  state.scheduledMessages.push({ text, when, id: uid() });
+  closeModal('scheduleModal');
+  $('#schedMessage').value = ''; $('#schedTime').value = '';
+  toast(`Scheduled for ${fmtDate(when)}`, 'ok');
+  pushMessage({ sys:true, body:`⏰ Message scheduled for ${fmtDate(when)}`, ts: now() });
+};
+
+setInterval(() => {
+  if (state.scheduledMessages.length === 0) return;
+  const now = Date.now();
+  const due = state.scheduledMessages.filter(s => s.when <= now);
+  state.scheduledMessages = state.scheduledMessages.filter(s => s.when > now);
+  due.forEach(s => doSend(s.text));
+}, 1000);
+
+/* --- Add new slash commands --- */
+COMMANDS.push(
+  { cmd:'/voice', desc:'Record voice message', icon:'🎤', example:'/voice' },
+  { cmd:'/poll', desc:'Create a poll', icon:'📊', example:'/poll' },
+  { cmd:'/schedule', desc:'Schedule a message', icon:'⏰', example:'/schedule' },
+  { cmd:'/forward', desc:'Forward last message', icon:'📤', example:'/forward' },
+  { cmd:'/star', desc:'Star a message by ID', icon:'⭐', example:'/star <id>' },
+  { cmd:'/mute', desc:'Toggle mute', icon:'🔇', example:'/mute' },
+  { cmd:'/disappear', desc:'Set disappearing messages', icon:'⏱️', example:'/disappear 60' },
+  { cmd:'/info', desc:'Show message info', icon:'ℹ️', example:'/info <id>' }
+);
+
+const _origHandleSlash = handleSlashCommand;
+handleSlashCommand = async function(input) {
+  const parts = input.trim().split(/\s+/);
+  const cmd = parts[0].toLowerCase();
+  const args = parts.slice(1).join(' ');
+  switch(cmd) {
+    case '/voice': $('#voiceRecBtn').click(); return true;
+    case '/poll': openModal('pollModal'); return true;
+    case '/schedule': openModal('scheduleModal'); return true;
+    case '/forward':
+      const lastMsg = [...state.chatLog].reverse().find(m => !m.sys && m.body);
+      if (lastMsg) { window._forwardMsg(lastMsg.id); }
+      else toast('No message to forward', 'warn');
+      return true;
+    case '/star':
+      if (args) window._starMsg(args);
+      return true;
+    case '/mute': $('#muteBtn').click(); return true;
+    case '/disappear':
+      if (args) {
+        disappearTTL = parseInt(args);
+        $('#disappearBtn').style.color = disappearTTL > 0 ? 'var(--warn)' : '';
+        toast(disappearTTL > 0 ? `Disappearing ON (${disappearTTL}s)` : 'Disappearing OFF', 'ok');
+        if (state.peer) state.peer.send({ type:'dm-setting', ttl: disappearTTL });
+        scheduleDisappearingCleanup();
+      } else openModal('disappearModal');
+      return true;
+    case '/info':
+      if (args) window._showMsgInfo(args);
+      return true;
+  }
+  return _origHandleSlash(input);
+};
+
+/* --- Add star + forward + info to hover actions / context menu --- */
+const _origCtxMenu = $('#messages').oncontextmenu;
+$('#messages').addEventListener('contextmenu', (e) => {
+  // existing handler already runs; this is a no-op supplement
+}, { capture: false });
+
+/* --- Hook into bindPrivatePeerEvents to handle new message types --- */
+const _origBindPrivate2 = bindPrivatePeerEvents;
+bindPrivatePeerEvents = function(p) {
+  _origBindPrivate2(p);
+  const origMessage = p.onMessage;
+  p.onMessage = (msg) => {
+    if (msg.type === 'voice') { pushVoiceMessage({ me:false, ...msg, author: state.peerName, authorAvatar: state.peerAvatar }); return; }
+    if (msg.type === 'poll') { pushMessage({ me:false, ...msg, author: state.peerName, authorAvatar: state.peerAvatar }); return; }
+    if (msg.type === 'poll-vote') {
+      const m = state.chatLog.find(x => x.id === msg.id);
+      if (m) {
+        if (!m.votes) m.votes = {};
+        Object.keys(m.votes).forEach(k => { m.votes[k] = m.votes[k].filter(x => x !== msg.voter); if (m.votes[k].length === 0) delete m.votes[k]; });
+        if (!m.votes[msg.option]) m.votes[msg.option] = [];
+        m.votes[msg.option].push(msg.voter);
+        renderMessages();
+      }
+      return;
+    }
+    if (msg.type === 'dm-setting') {
+      if (msg.ttl > 0) {
+        toast(`Peer set disappearing messages: ${msg.ttl}s`, 'warn');
+        // Apply per-message TTL on receive
+      }
+      return;
+    }
+    if (msg.type === 'read-receipt-detail') {
+      const m = state.chatLog.find(x => x.id === msg.id);
+      if (m) { m.read = true; m.readAt = msg.readAt; renderMessages(); }
+      return;
+    }
+    origMessage && origMessage(msg);
+  };
+};
+
+/* --- Mark messages as read with timestamp --- */
+const _origOnRead = (id) => {
+  const m = state.chatLog.find(x => x.id === id);
+  if (m) { m.read = true; m.readAt = Date.now(); renderMessages(); }
+};
+
+/* --- Restore draft when entering chat --- */
+const _origShowView = showView;
+showView = function(name) {
+  _origShowView(name);
+  if (name === 'chat') setTimeout(restoreDraft, 100);
+};
+
+/* --- Add hover action buttons for star, forward, info --- */
+// Patch buildMsgRow to add these to hover-actions
+const _origBuildMsgRow3 = buildMsgRow;
+buildMsgRow = function(m, groupped) {
+  const el = _origBuildMsgRow3(m, groupped);
+  if (m.deleted || m.sys) return el;
+  const hover = el.querySelector('.hover-actions');
+  if (hover) {
+    const starBtn = document.createElement('button');
+    starBtn.title = 'Star';
+    starBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+    starBtn.onclick = (e) => { e.stopPropagation(); window._starMsg(m.id); };
+    hover.insertBefore(starBtn, hover.children[1]);
+
+    const fwdBtn = document.createElement('button');
+    fwdBtn.title = 'Forward';
+    fwdBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>`;
+    fwdBtn.onclick = (e) => { e.stopPropagation(); window._forwardMsg(m.id); };
+    hover.appendChild(fwdBtn);
+
+    const infoBtn = document.createElement('button');
+    infoBtn.title = 'Info';
+    infoBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+    infoBtn.onclick = (e) => { e.stopPropagation(); window._showMsgInfo(m.id); };
+    hover.appendChild(infoBtn);
+  }
+  // Add star badge if starred
+  if (state.starredMessages.has(m.id)) {
+    const meta = el.querySelector('.msg-meta');
+    if (meta) {
+      const star = document.createElement('span');
+      star.className = 'star-badge';
+      star.textContent = '⭐';
+      meta.appendChild(star);
+    }
+  }
+  return el;
+};
+
+/* --- Add disappearing message badge to composer hint --- */
+setInterval(() => {
+  if (disappearTTL > 0) {
+    const hint = $('#composerHint');
+    if (hint && !hint.dataset.dmBadge) {
+      hint.dataset.dmBadge = '1';
+      hint.innerHTML = hint.innerHTML + ` · <span style="color:var(--warn)">⏱️ Disappearing: ${disappearTTL}s</span>`;
+    }
+  } else {
+    const hint = $('#composerHint');
+    if (hint && hint.dataset.dmBadge) {
+      delete hint.dataset.dmBadge;
+      hint.innerHTML = 'Press <b>Enter</b> to send · <b>Shift+Enter</b> for newline · <b>/</b> for commands · <b>Ctrl+K</b> for palette · 🎤 hold/press mic to record';
+    }
+  }
+}, 1000);
+
+/* ============================================================
+   BOOT (original)
 ============================================================ */
 async function boot() {
   applySettings(); autoScale();
